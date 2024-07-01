@@ -4,21 +4,17 @@ import re
 from classes import MolecularData, ForceFieldInfo
 
 ##to do:
-#re-figure out how to handle the data, try to think about future use cases. 
 #environment or .yml for for script
 #demo
 
 
-
-
-def parse_CGenFF(file_path):
+def parse_cgen(file_path):
     molecular_data = MolecularData()
     current_section = None
     
     with open(file_path, 'r') as file:
         for line in file:
             line = line.strip()
-            print(current_section)
             if not line or line.startswith(('*', '#', '!')):
                 continue
             elif not line.strip():
@@ -140,11 +136,11 @@ def parse_CGenFF(file_path):
 
     return molecular_data
 
-parse_CGenFF('CGFF-CR2_output.dat')
+
 
 # i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]          mult
 
-def parse_FF(ff_file): ##WIP
+def parse_ff(ff_file): ##WIP
     #this is going to be the tricky part: searching the ffbonded.itp file 
     #for matching strings.
     selection = False
