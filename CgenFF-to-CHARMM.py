@@ -100,19 +100,16 @@ def parse_CGenFF(file_path):
     with open(file_path, 'r') as file:
         for line in file:
             line = line.strip()
-            print(line)
+            print(current_section)
             if not line or line.startswith(('*', '#', '!')):
                 continue
             elif not line.strip():
                 current_section = None
 
-            #FOR BEGINNING LINE
-            #SLIGHT EDITING DONE TO .str FILE TO MAKE THIS WORK 
-
             ####----merged.itp----####
             if line.startswith('ATOM'):
                 current_section = 'ATOM'
-            elif line.startswith('BOND'): #SINGULAR-merged.rtp
+            elif line.startswith('BOND '): #SINGULAR-merged.rtp
                 current_section = 'BOND'  #SINGULAR-merged.rtp
             elif line.startswith('IMPR'):
                 current_section = 'IMPR'
@@ -143,7 +140,7 @@ def parse_CGenFF(file_path):
 
 #HANDLES THE PLURAL AND SINGLUAR VERSIONS THAT CgenFF likes to use.
 #similar treatment to 
-            elif current_section == 'BOND' and len(line.split()) != 1:
+            elif current_section == 'BOND ' and len(line.split()) != 1:
                 bond_data = line.split()
                 if len(bond_data) == 3:
                     row = {
@@ -226,8 +223,6 @@ def parse_CGenFF(file_path):
     return molecular_data
 
 parse_CGenFF('CGFF-CR2_output.dat')
-print(MolecularData.__class__)
-# print(MolecularData.get_angles())
 
 # i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]          mult
 
@@ -313,63 +308,63 @@ def parse_FF(ff_file): ##WIP
 # CGEN_dihedrals = pd.DataFrame(parsed_CGen.get_dihedrals())
 
 
-def get_unique_entries(ff, cgen, index_columns):
-    try:
-        merged = cgen.merge(ff, on=index_columns, how='left', indicator=True)
+# def get_unique_entries(ff, cgen, index_columns):
+#     try:
+#         merged = cgen.merge(ff, on=index_columns, how='left', indicator=True)
 
-        #unique entries 
-        unique_entries = merged[merged['_merge'] == 'left_only']
-        #curating dataset to be easier to work with
-        unique_entries = unique_entries.drop(columns=ff.columns.difference  (index_columns))
-        unique_entries = unique_entries.drop(columns=['_merge'])
+#         #unique entries 
+#         unique_entries = merged[merged['_merge'] == 'left_only']
+#         #curating dataset to be easier to work with
+#         unique_entries = unique_entries.drop(columns=ff.columns.difference  (index_columns))
+#         unique_entries = unique_entries.drop(columns=['_merge'])
 
-        #reset index
-        unique_entries.reset_index(drop=True, inplace=True)
-        return unique_entries
-    except AttributeError:
-        print('cannot merge empty array')
+#         #reset index
+#         unique_entries.reset_index(drop=True, inplace=True)
+#         return unique_entries
+#     except AttributeError:
+#         print('cannot merge empty array')
 
-parsed_FF = parse_FF('ffbonded.itp')
-parsed_CGen = parse_CGenFF('CGFF-CR2_output.dat')
+# parsed_FF = parse_FF('ffbonded.itp')
+# parsed_CGen = parse_CGenFF('CGFF-CR2_output.dat')
 
-cgen_impropers = parsed_CGen.get_impropers()
+# cgen_impropers = parsed_CGen.get_impropers()
 
-unique_bonds = get_unique_entries(parsed_FF.get_bonds(), 
-    parsed_CGen.get_bonds(),
-    ['i', 'j'])
+# unique_bonds = get_unique_entries(parsed_FF.get_bonds(), 
+#     parsed_CGen.get_bonds(),
+#     ['i', 'j'])
 
-unique_angles = get_unique_entries(parsed_FF.get_angles(), 
-    parsed_CGen.get_angles(), 
-    ['i', 'j', 'k'])
+# unique_angles = get_unique_entries(parsed_FF.get_angles(), 
+#     parsed_CGen.get_angles(), 
+#     ['i', 'j', 'k'])
 
-unique_dihedrals = get_unique_entries(parsed_FF.get_dihedrals(),
-    parsed_CGen.get_dihedrals(),
-    ['i', 'j', 'k', 'l', 'mult'])
+# unique_dihedrals = get_unique_entries(parsed_FF.get_dihedrals(),
+#     parsed_CGen.get_dihedrals(),
+#     ['i', 'j', 'k', 'l', 'mult'])
 
-unique_impropers = get_unique_entries(parsed_FF.get_impropers(), 
-    parsed_CGen.get_impropers(),
-    ['i', 'j', 'k', 'l', 'mult'])
+# unique_impropers = get_unique_entries(parsed_FF.get_impropers(), 
+#     parsed_CGen.get_impropers(),
+#     ['i', 'j', 'k', 'l', 'mult'])
 
-def update_charmm(df, headers):
+# def update_charmm(df, headers):
 
-    unit_regex = r'\[.*?\]' #remove anything between brackets
+#     unit_regex = r'\[.*?\]' #remove anything between brackets
 
-    #DF.keys() MUST MATCH THE HEADERS
-    #I changed some of this stuff quickly so it may need some tweaking
-    columns = re.sub(unit_regex, '', headers).strip().split()
-    header_columns = [col for col in columns if col in df.columns]
+#     #DF.keys() MUST MATCH THE HEADERS
+#     #I changed some of this stuff quickly so it may need some tweaking
+#     columns = re.sub(unit_regex, '', headers).strip().split()
+#     header_columns = [col for col in columns if col in df.columns]
 
-    with open('ffbonded-edits.dat', 'a') as f:
-        f.write(';'+str(header_columns)+'\n')
-        for index, row in df.iterrows():
-            line = '   '.join(str(item) if not isinstance(item, list) else ' '.join(map(str, item)) for item in row[header_columns])
-            f.write(line+'\n')
+#     with open('ffbonded-edits.dat', 'a') as f:
+#         f.write(';'+str(header_columns)+'\n')
+#         for index, row in df.iterrows():
+#             line = '   '.join(str(item) if not isinstance(item, list) else ' '.join(map(str, item)) for item in row[header_columns])
+#             f.write(line+'\n')
 
-# i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]          mult
+# # i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]          mult
 
-update_charmm(unique_bonds, ' ; i    j  func       b0 [nm]          kb [kJ/mol/nm^2]')
-update_charmm(unique_angles, ' ; i    j  k  func  theta0  ktheta  ub0 kub')
-update_charmm(unique_dihedrals,' i j k l  func  phi0   kphi  mult' )
+# update_charmm(unique_bonds, ' ; i    j  func       b0 [nm]          kb [kJ/mol/nm^2]')
+# update_charmm(unique_angles, ' ; i    j  k  func  theta0  ktheta  ub0 kub')
+# update_charmm(unique_dihedrals,' i j k l  func  phi0   kphi  mult' )
 
 
 
