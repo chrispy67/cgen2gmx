@@ -25,7 +25,7 @@ def parse_cgen(file_path):
                 current_section = 'ATOM'
             elif line.startswith('BOND '): #SINGULAR-merged.rtp
                 current_section = 'BOND'  #SINGULAR-merged.rtp
-            elif line.startswith('IMPR'):
+            elif line.startswith('IMPR '):
                 current_section = 'IMPR'
             
             ####----ffbonded.itp----####
@@ -54,23 +54,25 @@ def parse_cgen(file_path):
 
 #HANDLES THE PLURAL AND SINGLUAR VERSIONS THAT CgenFF likes to use.
 #similar treatment to 
-            elif current_section == 'BOND ' and len(line.split()) != 1:
+            elif current_section == 'BOND ' and len(line.split()) != 1: #avoids header
                 bond_data = line.split()
-                if len(bond_data) == 3:
-                    row = {
-                    'i': bond_data[1],
-                    'j': bond_data[2]
-                    }
-                    molecular_data.add_connectivity(row)
-                else:
-                    row = {
-                    'i': bond_data[1],
-                    'j': bond_data[2],
-                    'func': int(1),
-                    'kb': bond_data[3], ###UNITS spring constant
-                    'b0': bond_data[4]  ###UNITS A -> nm
-                    }
-                    molecular_data.add_bonds(row)
+                row = {
+                'i': bond_data[1],
+                'j': bond_data[2]
+                }
+                molecular_data.add_connectivity(row)
+            elif current_section == 'BONDS' and len(line.split()) != 1:
+                connectivity_data = line.split()
+                row = {
+                'i': connectivity_data[0],
+                'j': connectivity_data[1],
+                'func': int(1),
+                'kb': connectivity_data[2], ###UNITS spring constant
+                'b0': connectivity_data[3]  ###UNITS A -> nm
+                }
+                molecular_data.add_bonds(row)
+
+
 
 #angles: ;      i        j        k  func       theta0       ktheta      ub0       kub
 
@@ -78,64 +80,63 @@ def parse_cgen(file_path):
                 angle_data = line.split()
                 if angle_data[6] == '!':
                     row = {
-                        'i': angle_data[1],
-                        'j': angle_data[2],
-                        'k': angle_data[3],
+                        'i': angle_data[0],
+                        'j': angle_data[1],
+                        'k': angle_data[2],
                         'func': 5,
-                        'ktheta': angle_data[4],
-                        'theta0': angle_data[5],
+                        'ktheta': angle_data[3],
+                        'theta0': angle_data[4],
                         'kub': float(0.00),
                         'ub0': float(0.00)
                     }
                 else:
                         row = {
-                        'i': angle_data[1],
-                        'j': angle_data[2],
-                        'k': angle_data[3],
-                        'ktheta': angle_data[4],
-                        'theta0': angle_data[5],
-                        'kub': angle_data[6],
-                        'ub0': angle_data[7]
+                        'i': angle_data[0],
+                        'j': angle_data[1],
+                        'k': angle_data[2],
+                        'ktheta': angle_data[3],
+                        'theta0': angle_data[4],
+                        'kub': angle_data[5],
+                        'ub0': angle_data[6]
                     }
                 molecular_data.add_angles(row)
             
             elif current_section == 'DIHEDRAL' and len(line.split()) != 1:
                 dihedral_data = line.split()
                 row = {
-                    'i': dihedral_data[1],  #STANDARD DIHEDRALS HAVE FUNCTION 9
-                    'j': dihedral_data[2],
-                    'k': dihedral_data[3],
-                    'l': dihedral_data[4],
+                    'i': dihedral_data[0],  #STANDARD DIHEDRALS HAVE FUNCTION 9
+                    'j': dihedral_data[1],
+                    'k': dihedral_data[2],
+                    'l': dihedral_data[3],
                     'func': int(9),
-                    'kphi': dihedral_data[5],
-                    'mult': dihedral_data[6],
-                    'phi0': dihedral_data[7]
+                    'kphi': dihedral_data[4],
+                    'mult': dihedral_data[5],
+                    'phi0': dihedral_data[6]
                 }
                 molecular_data.add_dihedrals(row)
 
 # ;   i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]          mult
 
 
-            elif current_section == 'IMPROPER':
+            elif current_section == 'IMPROPER' and len(line.split()) != 1:
                 #OFTEN EMPTY
                 #BUT CONSIDER ERROR HANDLING THE REMAINDER OF THE SECTIONS FOR NO ENTRIES
                 
                 improper_data = line.split()
                 row = {
-                    'i': improper_data[1],    #IMPROPERS HAVE FUNCTION 2
-                    'j': improper_data[2],
-                    'k': improper_data[3],
-                    'l': improper_data[4],
+                    'i': improper_data[0],    #IMPROPERS HAVE FUNCTION 2
+                    'j': improper_data[1],
+                    'k': improper_data[2],
+                    'l': improper_data[3],
                     'func': int(2),
-                    'mult': improper_data[5],
-                    'keta': improper_data[6],
-                    'eta0': improper_data[7]
+                    'mult': improper_data[4],
+                    'keta': improper_data[5],
+                    'eta0': improper_data[6]
                 }
                 
                 molecular_data.add_impropers(row)
 
     return molecular_data
-
 
 
 # i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]          mult
@@ -185,6 +186,7 @@ def parse_ff(ff_file): ##WIP
                     continue
 
 #LESS THAN PERFECT SOLUTION FOR BYPASSING HEADERS, MIGHT GIVE SOME WEIRD DATAPOINTS
+#I can make this look better with the new nested dictionary I have
             elif selection == 'dihedraltypes'  and len(data) >=4 and data[4] == '9': #ACTUAL DIHEDRALS
                 try:
                     dihedral_data = line.split()

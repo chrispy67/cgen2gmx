@@ -81,10 +81,13 @@ import pandas as pd
 from classes import MolecularData, ForceFieldInfo
 from parse_files import parse_cgen, parse_ff
 
-#this works!!
+#to-do:
+# - i/o for files up HERE, will make it easy for end user. 
+# - put in some debug lines with the logger? putting time in here might save time later.
+# - rethink the need for headers as input for get_unique_entries() 
+
 cgen = parse_cgen('CGFF-CR2_output.dat') #get data by treating cgen as the class.
-# cgen = MolecularData()
-parse_cgen('CGFF-CR2_output.dat') #get data by treating cgen as the class.
+ff = parse_ff('ffbonded.itp')
 
 #how to loop through the dictionary and where the keys are addressable.
 def iterate_nested_dict(nested_dict, parent_key=''):
@@ -97,37 +100,41 @@ def iterate_nested_dict(nested_dict, parent_key=''):
 
 iterate_nested_dict(cgen.data)
 
+#this is how I can access data from the nested list with some over complicated files
+##EXAMPLE
+print(cgen.data['ffbonded.itp'].keys())
+print(cgen.data['ffbonded.itp']['bonds'])
+print(cgen.data['ffbonded.itp']['bonds'][0])
 
 
 
-# def get_unique_entries(ff, cgen, index_columns):
-#     try:
-#         merged = cgen.merge(ff, on=index_columns, how='left', indicator=True)
 
-#         #unique entries 
-#         unique_entries = merged[merged['_merge'] == 'left_only']
-#         #curating dataset to be easier to work with
-#         unique_entries = unique_entries.drop(columns=ff.columns.difference  (index_columns))
-#         unique_entries = unique_entries.drop(columns=['_merge'])
+def get_unique_entries(ff, cgen, index_columns):
+    try:
+        merged = cgen.merge(ff, on=index_columns, how='left', indicator=True)
 
-#         #reset index
-#         unique_entries.reset_index(drop=True, inplace=True)
-#         return unique_entries
-#     except AttributeError:
-#         print('cannot merge empty array')
+        #unique entries 
+        unique_entries = merged[merged['_merge'] == 'left_only']
+        #curating dataset to be easier to work with
+        unique_entries = unique_entries.drop(columns=ff.columns.difference  (index_columns))
+        unique_entries = unique_entries.drop(columns=['_merge'])
 
-# parsed_FF = parse_FF('ffbonded.itp')
-# parsed_CGen = parse_CGenFF('CGFF-CR2_output.dat')
+        #reset index
+        unique_entries.reset_index(drop=True, inplace=True)
+        return unique_entries
+    except AttributeError:
+        print('cannot merge empty array')
 
-# cgen_impropers = parsed_CGen.get_impropers()
 
-# unique_bonds = get_unique_entries(parsed_FF.get_bonds(), 
-#     parsed_CGen.get_bonds(),
-#     ['i', 'j'])
+unique_bonds = get_unique_entries(ff.get_bonds(), 
+    cgen.get_bonds(),
+    ['i', 'j'])
 
-# unique_angles = get_unique_entries(parsed_FF.get_angles(), 
-#     parsed_CGen.get_angles(), 
-#     ['i', 'j', 'k'])
+unique_angles = get_unique_entries(ff.get_angles(), 
+    cgen.get_angles(), 
+    ['i', 'j', 'k'])
+
+
 
 # unique_dihedrals = get_unique_entries(parsed_FF.get_dihedrals(),
 #     parsed_CGen.get_dihedrals(),
