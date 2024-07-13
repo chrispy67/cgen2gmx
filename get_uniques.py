@@ -86,10 +86,12 @@ import click
 import sys
 
 #to-do:
+# - put units in all classes
 # - i/o for files up HERE, will make it easy for end user. 
 # - put in some debug lines with the logger? putting time in here might save time later.
 # - I want to make it print out stuff REALLY consistently, whitespace and everything
 # - Something that can detect large errors or poor predictions??
+
 
 pwd = '{}/'.format(sys.path[0])
 cgen = parse_cgen('CGFF-CR2_output.dat') #get data by treating cgen as the class.
@@ -167,27 +169,22 @@ unique_dihedrals = get_uniques(ff.get_dihedrals(),
 
 unique_impropers = get_uniques(ff.get_impropers(), 
     cgen.get_impropers(),
-    ff.headers['dihedrals'].split()[0:4],
+    ff.headers['impropers'].split()[0:4],
     param='impropers')
 
+    # unit_regex = r'\[.*?\]'  # remove anything between brackets
+    # columns = re.sub(unit_regex, '', headers).strip().split()
 
 
+def update_charmm(df, headers, param):
+    columns = ff.headers[param].split()
+    unit_regex = r'\[.*?\]'
+    columns_regex = re.sub(unit_regex, '',headers).strip().split()
+    # print(columns_regex)
 
-
-
-if os.path.isfile('ffbonded-edits.dat') == True:
-    if click.confirm('ffbonded-edits.dat already exists, do you wish to overwrite and continue?', default=True):
-        print('overwriting previous file...')
-    else:
-        print('writing new ffbonded-edits.dat file...')
-
-
-def update_charmm(df, headers):
-    unit_regex = r'\[.*?\]'  # remove anything between brackets
-    columns = re.sub(unit_regex, '', headers).strip().split()
-    
+#this corrects for the issue that the code has with empty arrays and no parsed files. 
     if df is not None and hasattr(df, 'columns'):
-        header_columns = [col for col in columns if col in df.columns and col != 'NoneType']
+        header_columns = columns_regex
     else:
         header_columns = []
 
@@ -199,7 +196,7 @@ def update_charmm(df, headers):
                 f.write(line + '\n')
 
 ##i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]          mult
-# update_charmm(unique_bonds, str(ff.headers['bonds']))
-# update_charmm(unique_angles, str(ff.headers['angles']))
-# update_charmm(unique_dihedrals, str(ff.headers['dihedrals']))
-update_charmm(unique_impropers, str(ff.headers['impropers']))
+update_charmm(unique_bonds, str(ff.headers['bonds']), 'bonds')
+update_charmm(unique_angles, str(ff.headers['angles']), 'angles')
+update_charmm(unique_dihedrals, str(ff.headers['dihedrals']), 'dihedrals')
+#update_charmm(unique_impropers, str(ff.headers['impropers']), 'impropers')
