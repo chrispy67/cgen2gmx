@@ -80,12 +80,18 @@ import logging as log
 import pandas as pd
 from classes import MolecularData, ForceFieldInfo
 from parse_files import parse_cgen, parse_ff
+import re
+import os
+import click
+import sys
 
 #to-do:
 # - i/o for files up HERE, will make it easy for end user. 
 # - put in some debug lines with the logger? putting time in here might save time later.
-# - rethink the need for headers as input for get_unique_entries() 
+# - I want to make it print out stuff REALLY consistently, whitespace and everything
+# - Something that can detect large errors or poor predictions??
 
+pwd = '{}/'.format(sys.path[0])
 cgen = parse_cgen('CGFF-CR2_output.dat') #get data by treating cgen as the class.
 ff = parse_ff('ffbonded.itp')
 
@@ -98,74 +104,102 @@ def iterate_nested_dict(nested_dict, parent_key=''):
         else:
             print(f"{full_key}")
 
-iterate_nested_dict(cgen.data)
 
 #this is how I can access data from the nested list with some over complicated files
 ##EXAMPLE
-print(cgen.data['ffbonded.itp'].keys())
-print(cgen.data['ffbonded.itp']['bonds'])
-print(cgen.data['ffbonded.itp']['bonds'][0])
+# print(cgen.data['ffbonded.itp'].keys())
+# print(cgen.data['ffbonded.itp']['bonds'])
+# print(cgen.data['ffbonded.itp']['bonds'][0])
 
+#same as FF data!
+# print(ff.data['ffbonded.itp']['bonds'][2])
 
-
-
-def get_unique_entries(ff, cgen, index_columns):
+def get_uniques(ff, cgen, index_columns, param):
     try:
-        merged = cgen.merge(ff, on=index_columns, how='left', indicator=True)
-
-        #unique entries 
+        ff_df = pd.DataFrame(ff)
+        cgen_df = pd.DataFrame(cgen)
+        merged = cgen_df.merge(ff_df, on=index_columns, how='left', indicator=True)
+        
+        # Unique entries 
         unique_entries = merged[merged['_merge'] == 'left_only']
-        #curating dataset to be easier to work with
-        unique_entries = unique_entries.drop(columns=ff.columns.difference  (index_columns))
-        unique_entries = unique_entries.drop(columns=['_merge'])
 
-        #reset index
+        # Drop columns from ff_df that are not in index_columns
+        columns_to_drop = ff_df.columns.difference(index_columns)
+        columns_to_drop = [col for col in columns_to_drop if col in unique_entries.columns]
+        
+        # Curate dataset to be easier to work with
+        unique_entries = unique_entries.drop(columns=columns_to_drop)
+        unique_entries = unique_entries.drop(columns=['_merge', 'mult_y'], errors='ignore')  # Drop unnecessary columns
+
+        # Remove columns and reset index
+        unique_entries = unique_entries.rename(columns=lambda x: x.rstrip('_x'))
         unique_entries.reset_index(drop=True, inplace=True)
-        return unique_entries
-    except AttributeError:
-        print('cannot merge empty array')
 
+        return pd.DataFrame(unique_entries)
+        
 
-unique_bonds = get_unique_entries(ff.get_bonds(), 
-    cgen.get_bonds(),
-    ['i', 'j'])
+    except AttributeError as e:
+        print(f'AttributeError: {e}')
+        print(f'cannot merge empty array, possibly there are no entires for {param}?')
+    except KeyError as e:
+        if len(ff_df.columns) == 0:
+            print(f'KeyError: {e}')
+            print(f'length of merged array for {param} is 0, no unique entries detected?')
+        else:
+            print(f'KeyError: {e}')
+            print(f'ff_df columns: {ff_df.columns}')
+            print(f'index_columns: {index_columns}')
 
-unique_angles = get_unique_entries(ff.get_angles(), 
-    cgen.get_angles(), 
-    ['i', 'j', 'k'])
+unique_bonds = get_uniques(ff.get_bonds(), 
+    cgen.get_bonds(), 
+    ff.headers['bonds'].split()[0:2],
+    param='bonds')
 
+unique_angles = get_uniques(ff.get_angles(), 
+    cgen.get_angles(),
+    ff.headers['angles'].split()[0:3],
+    param='angles')
 
+unique_dihedrals = get_uniques(ff.get_dihedrals(),
+    cgen.get_dihedrals(),
+    ff.headers['dihedrals'].split()[0:4],
+    param='dihedrals')
 
-# unique_dihedrals = get_unique_entries(parsed_FF.get_dihedrals(),
-#     parsed_CGen.get_dihedrals(),
-#     ['i', 'j', 'k', 'l', 'mult'])
-
-# unique_impropers = get_unique_entries(parsed_FF.get_impropers(), 
-#     parsed_CGen.get_impropers(),
-#     ['i', 'j', 'k', 'l', 'mult'])
-
-# def update_charmm(df, headers):
-
-#     unit_regex = r'\[.*?\]' #remove anything between brackets
-
-#     #DF.keys() MUST MATCH THE HEADERS
-#     #I changed some of this stuff quickly so it may need some tweaking
-#     columns = re.sub(unit_regex, '', headers).strip().split()
-#     header_columns = [col for col in columns if col in df.columns]
-
-#     with open('ffbonded-edits.dat', 'a') as f:
-#         f.write(';'+str(header_columns)+'\n')
-#         for index, row in df.iterrows():
-#             line = '   '.join(str(item) if not isinstance(item, list) else ' '.join(map(str, item)) for item in row[header_columns])
-#             f.write(line+'\n')
-
-# # i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]          mult
-
-# update_charmm(unique_bonds, ' ; i    j  func       b0 [nm]          kb [kJ/mol/nm^2]')
-# update_charmm(unique_angles, ' ; i    j  k  func  theta0  ktheta  ub0 kub')
-# update_charmm(unique_dihedrals,' i j k l  func  phi0   kphi  mult' )
+unique_impropers = get_uniques(ff.get_impropers(), 
+    cgen.get_impropers(),
+    ff.headers['dihedrals'].split()[0:4],
+    param='impropers')
 
 
 
 
 
+
+if os.path.isfile('ffbonded-edits.dat') == True:
+    if click.confirm('ffbonded-edits.dat already exists, do you wish to overwrite and continue?', default=True):
+        print('overwriting previous file...')
+    else:
+        print('writing new ffbonded-edits.dat file...')
+
+
+def update_charmm(df, headers):
+    unit_regex = r'\[.*?\]'  # remove anything between brackets
+    columns = re.sub(unit_regex, '', headers).strip().split()
+    
+    if df is not None and hasattr(df, 'columns'):
+        header_columns = [col for col in columns if col in df.columns and col != 'NoneType']
+    else:
+        header_columns = []
+
+    with open('ffbonded-edits.dat', 'w') as f:
+        f.write(';' + str(header_columns) + '\n')
+        if df is not None and hasattr(df, 'iterrows'):
+            for index, row in df.iterrows():
+                line = '   '.join(str(item) if not isinstance(item, list) else ' '.join(map(str, item)) for item in row[header_columns])
+                f.write(line + '\n')
+
+##i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]          mult
+# update_charmm(unique_bonds, str(ff.headers['bonds']))
+# update_charmm(unique_angles, str(ff.headers['angles']))
+# update_charmm(unique_dihedrals, str(ff.headers['dihedrals']))
+update_charmm(unique_impropers, str(ff.headers['impropers']))

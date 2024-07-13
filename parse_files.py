@@ -4,8 +4,10 @@ import re
 from classes import MolecularData, ForceFieldInfo
 
 ##to do:
-#environment or .yml for for script
-#demo
+
+
+# - environment or .yml for for script
+# - demo
 
 
 def parse_cgen(file_path):
@@ -157,7 +159,6 @@ def parse_ff(ff_file): ##WIP
             #checks for comments
             if not line.strip() or line.startswith(('*', '#', ';', '!')):
                 continue
-            #MORE ELEGANT SOLUTION FOR DEALING WITH SELECTIONS
             if line.startswith('[ '):
                 selection = line.split('[')[-1].split(']')[0].strip().lower()
                 continue
@@ -185,9 +186,7 @@ def parse_ff(ff_file): ##WIP
                 except IndexError:
                     continue
 
-#LESS THAN PERFECT SOLUTION FOR BYPASSING HEADERS, MIGHT GIVE SOME WEIRD DATAPOINTS
-#I can make this look better with the new nested dictionary I have
-            elif selection == 'dihedraltypes'  and len(data) >=4 and data[4] == '9': #ACTUAL DIHEDRALS
+            elif selection == 'dihedraltypes' and data[4] == '9': #ACTUAL DIHEDRALS
                 try:
                     dihedral_data = line.split()
                     existing_data = {
@@ -199,10 +198,9 @@ def parse_ff(ff_file): ##WIP
                     }
                     ff_data.add_dihedrals(existing_data)
                 except IndexError:
-
                     continue
             
-            elif selection == 'dihedraltypes' and len(data) >= 4 and data[4] == '2': #IMPROPERS
+            elif selection == 'dihedraltypes' and data[4] == '2': #IMPROPERS
                 try:
                     improper_data = line.split()
                     existing_data = {

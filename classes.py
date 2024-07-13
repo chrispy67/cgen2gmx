@@ -118,6 +118,12 @@ class ForceFieldInfo:
                 'impropers': []
             }
         }
+        self.headers = {
+            'bonds': str('i    j     func  b0[nm]  kb[kJ/mol/nm^2]'),
+            'angles': str('i   j  k  func  theta0  ktheta  ub0 kub'),
+            'dihedrals': str('i j k l  func  phi0   kphi  mult'),
+            'impropers': str('i j k l  func  phi0   kphi  mult')
+        }
 
     def add_atom(self, atom_data):
         self.data['merged.rtp']['atom'].append(atom_data)
