@@ -89,7 +89,7 @@ def parse_cgen(file_path):
                         'ktheta': angle_data[3],
                         'theta0': angle_data[4],
                         'kub': float(0.00),
-                        'ub0': float(0.00)
+                        'r0': float(0.00)
                     }
                 else:
                         row = {
@@ -99,7 +99,7 @@ def parse_cgen(file_path):
                         'ktheta': angle_data[3],
                         'theta0': angle_data[4],
                         'kub': angle_data[5],
-                        'ub0': angle_data[6]
+                        'r0': angle_data[6]
                     }
                 molecular_data.add_angles(row)
             
@@ -112,10 +112,11 @@ def parse_cgen(file_path):
                     'l': dihedral_data[3],
                     'func': int(9),
                     'kphi': dihedral_data[4],
-                    'mult': dihedral_data[5],
+                    'multi': dihedral_data[5],
                     'phi0': dihedral_data[6]
                 }
                 molecular_data.add_dihedrals(row)
+
 
 # ;   i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]          mult
 
@@ -131,16 +132,17 @@ def parse_cgen(file_path):
                     'k': improper_data[2],
                     'l': improper_data[3],
                     'func': int(2),
-                    'mult': improper_data[4],
-                    'keta': improper_data[5],
-                    'eta0': improper_data[6]
+                    'mult': improper_data[5],
+                    'kphi': improper_data[4],
+                    'phi0': improper_data[6]
                 }
                 
                 molecular_data.add_impropers(row)
 
     return molecular_data
 
-
+testing = parse_cgen('CRO-output.dat')
+print(testing.get_dihedrals())
 # i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]          mult
 
 def parse_ff(ff_file): ##WIP

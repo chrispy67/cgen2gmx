@@ -85,8 +85,9 @@ import os
 import click
 import sys
 
+# FIX CHECKING FOR EXISTING FILES
 #to-do:
-# - put units in all classes
+# - get rid of ForceFieldInfo.headers() in favor for a unit column in MolecularData
 # - i/o for files up HERE, will make it easy for end user. 
 # - put in some debug lines with the logger? putting time in here might save time later.
 # - I want to make it print out stuff REALLY consistently, whitespace and everything
@@ -136,7 +137,7 @@ def get_uniques(ff, cgen, index_columns, param):
         # Remove columns and reset index
         unique_entries = unique_entries.rename(columns=lambda x: x.rstrip('_x'))
         unique_entries.reset_index(drop=True, inplace=True)
-
+        print(unique_entries)
         return pd.DataFrame(unique_entries)
         
 
@@ -172,31 +173,51 @@ unique_impropers = get_uniques(ff.get_impropers(),
     ff.headers['impropers'].split()[0:4],
     param='impropers')
 
-    # unit_regex = r'\[.*?\]'  # remove anything between brackets
-    # columns = re.sub(unit_regex, '', headers).strip().split()
 
+# unit_regex = r'\[.*?\]'  # remove anything between brackets
+# columns = re.sub(unit_regex, '', headers).strip().split()
+
+#this is a case where the script is running and there is already a file. might changes this
+# if os.path.isfile('ffbonded-edits.dat'):
+#     if click.confirm('ffbonded-edits.dat exists, would you like to overwrite the previous file?', default=True):
+#         pass
+#     else:  
+#         sys.exit('canceling')
+
+print(unique_impropers)
 
 def update_charmm(df, headers, param):
     columns = ff.headers[param].split()
+    columns = df.columns
     unit_regex = r'\[.*?\]'
     columns_regex = re.sub(unit_regex, '',headers).strip().split()
     # print(columns_regex)
-
-#this corrects for the issue that the code has with empty arrays and no parsed files. 
     if df is not None and hasattr(df, 'columns'):
         header_columns = columns_regex
     else:
         header_columns = []
 
-    with open('ffbonded-edits.dat', 'w') as f:
-        f.write(';' + str(header_columns) + '\n')
+    file_exists = os.path.isfile('ffbonded-edits.dat')
+    with open('ffbonded-edits.dat', 'a' if file_exists else 'w') as f:
+        # Write headers if file does not exist (first write)
+        if not file_exists:
+            f.write('   '.join(columns) + '\n')
+
         if df is not None and hasattr(df, 'iterrows'):
             for index, row in df.iterrows():
                 line = '   '.join(str(item) if not isinstance(item, list) else ' '.join(map(str, item)) for item in row[header_columns])
-                f.write(line + '\n')
+                f.write(line+'\n')
+
+
+    # with open('ffbonded-edits.dat', 'w') as f:
+    #     f.write(';' + str(header_columns) + '\n')
+    #     if df is not None and hasattr(df, 'iterrows'):
+    #         for index, row in df.iterrows():
+    #             line = '   '.join(str(item) if not isinstance(item, list) else ' '.join(map(str, item)) for item in row[header_columns])
+    #             f.write(line + '\n')
 
 ##i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]          mult
 update_charmm(unique_bonds, str(ff.headers['bonds']), 'bonds')
 update_charmm(unique_angles, str(ff.headers['angles']), 'angles')
-update_charmm(unique_dihedrals, str(ff.headers['dihedrals']), 'dihedrals')
+# update_charmm(unique_dihedrals, str(ff.headers['dihedrals']), 'dihedrals')
 #update_charmm(unique_impropers, str(ff.headers['impropers']), 'impropers')
