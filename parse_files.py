@@ -131,19 +131,14 @@ def parse_cgen(file_path):
                     'j': improper_data[1],
                     'k': improper_data[2],
                     'l': improper_data[3],
-                    'func': int(2),
-                    'mult': improper_data[5],
-                    'kphi': improper_data[4],
+                    'func': improper_data[4],
+                    'kphi': improper_data[5],
                     'phi0': improper_data[6]
                 }
                 
                 molecular_data.add_impropers(row)
 
     return molecular_data
-
-testing = parse_cgen('CRO-output.dat')
-print(testing.get_dihedrals())
-# i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]          mult
 
 def parse_ff(ff_file): ##WIP
     #this is going to be the tricky part: searching the ffbonded.itp file 
@@ -196,7 +191,7 @@ def parse_ff(ff_file): ##WIP
                         'j': dihedral_data[1],
                         'k': dihedral_data[2],
                         'l': dihedral_data[3],
-                        'mult': dihedral_data[7] 
+                        'multi': dihedral_data[7] 
                     }
                     ff_data.add_dihedrals(existing_data)
                 except IndexError:
@@ -210,7 +205,7 @@ def parse_ff(ff_file): ##WIP
                         'j': improper_data[1],
                         'k': improper_data[2],
                         'l': improper_data[3],
-                        'mult':improper_data[7]
+                        'func':improper_data[4]
                     }
                     ff_data.add_impropers(existing_data)
                 except IndexError:
