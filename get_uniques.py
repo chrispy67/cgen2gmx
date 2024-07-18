@@ -85,18 +85,25 @@ import os
 import click
 import sys
 
-# FIX CHECKING FOR EXISTING FILES
 #to-do:
-# - get rid of ForceFieldInfo.headers() in favor for a unit column in MolecularData
+# - enforce strict printing format for file generation so it blends in with normal charmm
+#   - running this as of 7/17 will produce a file that shows where work is needed
+#       - surely there is a library for this right?
+#       - also how to handle rounding and sigfigs? 
+#       - handle "nan's" with zeros?
+# - write loops, indicated below. 
+
+###LONG GAME
 # - i/o for files up HERE, will make it easy for end user. 
 # - put in some debug lines with the logger? putting time in here might save time later.
-# - I want to make it print out stuff REALLY consistently, whitespace and everything
-# - Something that can detect large errors or poor predictions??
+# - Something that can detect large errors or poor predictions?
+#   - would need to parse this as an optional flag in parse_files.py
 
 
 pwd = '{}/'.format(sys.path[0])
 cgen = parse_cgen('CGFF-CR2_output.dat') #get data by treating cgen as the class.
 ff = parse_ff('ffbonded.itp')
+
 
 #how to loop through the dictionary and where the keys are addressable.
 def iterate_nested_dict(nested_dict, parent_key=''):
@@ -119,25 +126,24 @@ def iterate_nested_dict(nested_dict, parent_key=''):
 
 def get_uniques(ff, cgen, index_columns, param):
     try:
-        ff_df = pd.DataFrame(ff)
-        cgen_df = pd.DataFrame(cgen)
-        merged = cgen_df.merge(ff_df, on=index_columns, how='left', indicator=True)
+        # ff_df = pd.DataFrame(ff)
+        # cgen_df = pd.DataFrame(cgen)
+        merged = cgen.merge(ff, on=index_columns, how='left', indicator=True)
         
-        # Unique entries 
+        # merge both arrays
         unique_entries = merged[merged['_merge'] == 'left_only']
 
         # Drop columns from ff_df that are not in index_columns
-        columns_to_drop = ff_df.columns.difference(index_columns)
+        columns_to_drop = ff.columns.difference(index_columns)
         columns_to_drop = [col for col in columns_to_drop if col in unique_entries.columns]
         
-        # Curate dataset to be easier to work with
+        # remove unique entries and remove extra columns
         unique_entries = unique_entries.drop(columns=columns_to_drop)
         unique_entries = unique_entries.drop(columns=['_merge', 'mult_y'], errors='ignore')  # Drop unnecessary columns
 
         # Remove columns and reset index
-        unique_entries = unique_entries.rename(columns=lambda x: x.rstrip('_x'))
+        # unique_entries = unique_entries.rename(columns=lambda x: x.rstrip('_x'))
         unique_entries.reset_index(drop=True, inplace=True)
-        print(unique_entries)
         return pd.DataFrame(unique_entries)
         
 
@@ -145,79 +151,97 @@ def get_uniques(ff, cgen, index_columns, param):
         print(f'AttributeError: {e}')
         print(f'cannot merge empty array, possibly there are no entires for {param}?')
     except KeyError as e:
-        if len(ff_df.columns) == 0:
+        if len(ff.columns) == 0:
             print(f'KeyError: {e}')
             print(f'length of merged array for {param} is 0, no unique entries detected?')
         else:
             print(f'KeyError: {e}')
-            print(f'ff_df columns: {ff_df.columns}')
+            print(f'ff_df columns: {ff.columns}')
             print(f'index_columns: {index_columns}')
 
+
+#could I write a for loop that does this?
 unique_bonds = get_uniques(ff.get_bonds(), 
     cgen.get_bonds(), 
-    ff.headers['bonds'].split()[0:2],
+    list(ff.get_bonds().keys()),
     param='bonds')
 
 unique_angles = get_uniques(ff.get_angles(), 
     cgen.get_angles(),
-    ff.headers['angles'].split()[0:3],
+    list(ff.get_angles().keys()),
     param='angles')
 
 unique_dihedrals = get_uniques(ff.get_dihedrals(),
     cgen.get_dihedrals(),
-    ff.headers['dihedrals'].split()[0:4],
+    list(ff.get_dihedrals().keys()),
     param='dihedrals')
 
 unique_impropers = get_uniques(ff.get_impropers(), 
     cgen.get_impropers(),
-    ff.headers['impropers'].split()[0:4],
+    list(ff.get_impropers().keys()),
     param='impropers')
 
 
-# unit_regex = r'\[.*?\]'  # remove anything between brackets
-# columns = re.sub(unit_regex, '', headers).strip().split()
+# this is a case where the script is running and there is already a file. might changes this
+if os.path.isfile('ffbonded-edits.dat'):
+    if click.confirm('ffbonded-edits.dat exists, would you like to overwrite the previous file?', default=True):
+        with open('ffbonded-edits.dat', 'w') as fp:
+            pass
+    else:  
+        sys.exit('canceling')
 
-#this is a case where the script is running and there is already a file. might changes this
-# if os.path.isfile('ffbonded-edits.dat'):
-#     if click.confirm('ffbonded-edits.dat exists, would you like to overwrite the previous file?', default=True):
-#         pass
-#     else:  
-#         sys.exit('canceling')
 
-print(unique_impropers)
+# print(unique_bonds.keys()) #contains units!
+# print(unique_bonds['kb_unit'].iloc[0])
 
-def update_charmm(df, headers, param):
-    columns = ff.headers[param].split()
-    columns = df.columns
-    unit_regex = r'\[.*?\]'
-    columns_regex = re.sub(unit_regex, '',headers).strip().split()
-    # print(columns_regex)
-    if df is not None and hasattr(df, 'columns'):
-        header_columns = columns_regex
-    else:
-        header_columns = []
+def update_charmm(df):
+    # to be printed at the top of each entry in ffbonded-edits.dat
+    # units are stored in classes.py
+    header_columns = [col for col in df.columns if '_unit' not in col]
+    units = [col for col in df.columns if '_unit' in col]
+
+    ## PLAY WITH THIS SOME MORE!!
+    # print(df[units].iloc[0])
+    # print('; ' + ', '.join(header_columns))
 
     file_exists = os.path.isfile('ffbonded-edits.dat')
     with open('ffbonded-edits.dat', 'a' if file_exists else 'w') as f:
         # Write headers if file does not exist (first write)
-        if not file_exists:
-            f.write('   '.join(columns) + '\n')
+        #THIS IS WHERE FORMATTING/SPACING COMES IN
+        f.write(';'+' '.join(header_columns) + '\n')
 
         if df is not None and hasattr(df, 'iterrows'):
             for index, row in df.iterrows():
-                line = '   '.join(str(item) if not isinstance(item, list) else ' '.join(map(str, item)) for item in row[header_columns])
-                f.write(line+'\n')
+                
+                #FORMATTING AND SPACING HERE ALSO
+                line = '   '.join(str(row[col]) if not isinstance(row[col], list) else ' '.join(map(str, row[col])) for col in header_columns)
+                f.write(line + '\n')
 
 
-    # with open('ffbonded-edits.dat', 'w') as f:
-    #     f.write(';' + str(header_columns) + '\n')
-    #     if df is not None and hasattr(df, 'iterrows'):
-    #         for index, row in df.iterrows():
-    #             line = '   '.join(str(item) if not isinstance(item, list) else ' '.join(map(str, item)) for item in row[header_columns])
-    #             f.write(line + '\n')
+#again, a for loop that does this? I have all these keys stored. much more flexible
+update_charmm(unique_bonds)
+update_charmm(unique_angles)
+update_charmm(unique_dihedrals)
+update_charmm(unique_impropers)
 
-##i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]          mult
-update_charmm(unique_bonds, str(ff.headers['bonds']), 'bonds')
-update_charmm(unique_angles, str(ff.headers['angles']), 'angles')
-# update_charmm(unique_dihedrals, str(ff.headers['dihedrals']), 'dihedrals')
-#update_charmm(unique_impropers, str(ff.headers['impropers']), 'impropers')
+#headers are spaced like this:
+##i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]  
+
+#and the data in the forcefields looks like this:
+#        NH2      CT1        C        O     9     0.000000     0.000000     1
+#        NH2      CT2        C        O     9     0.000000     0.000000     1
+#        NH2      CT1        C      NH1     9     0.000000     0.000000     1
+#        NH2      CT2        C      NH1     9     0.000000     0.000000     1
+#          H      NH2      CT1      CT1     9     0.000000     0.000000     1
+#          H      NH2      CT1        C     9     0.000000     0.000000     1
+#          H      NH2      CT2        C     9     0.000000     0.000000     1
+#          H      NH2      CT1      HB1     9     0.000000     0.460240     3
+#          H      NH2      CT2      HB2     9     0.000000     0.460240     3
+#          H      NH2      CT1      CT2     9     0.000000     0.460240     3
+#          H      NH2      CT1      CT3     9     0.000000     0.460240     3
+#        CAI       CA       CA      CAI     9   180.000000    12.970400     2
+#         CA      CPT      CPT       CA     9   180.000000    12.552000     2
+#        CAI      CPT      CPT      CAI     9   180.000000    12.552000     2
+#         CA       CY      CPT       CA     9   180.000000    12.552000     2
+#         CA       CY      CPT      CAI     9   180.000000    12.552000     2
+#         CA       NY      CPT       CA     9   180.000000    12.552000     2
