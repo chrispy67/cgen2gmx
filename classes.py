@@ -17,6 +17,7 @@ class MolecularData:
             }
         }
 
+#store data in the class and empty arrays above
     def add_atom(self, atom_data):
         self.data['merged.rtp']['atom'].append(atom_data)
 
@@ -33,8 +34,6 @@ class MolecularData:
 
     def add_impropers(self, improper_data):
         self.data['ffbonded.itp']['impropers'].append(improper_data)
-
-
 
 #retrieve data from the class w/ converted units
     def get_atoms(self):
@@ -157,6 +156,7 @@ class MolecularData:
 #nearly identical class to Molecular Data
 
 class ForceFieldInfo:
+
     def __init__(self):
         self.data = {
             'merged.rtp': {
@@ -169,12 +169,6 @@ class ForceFieldInfo:
                 'dihedrals': [],
                 'impropers': []
             }
-        }
-        self.headers = {
-            'bonds': str('i    j     func  b0[nm]  kb[kJ/mol/nm^2]'),
-            'angles': str('i   j  k  func  theta0  ktheta  ub0 kub'),
-            'dihedrals': str('i j k l  func  phi0   kphi  mult'),
-            'impropers': str('i j k l  func  phi0   kphi  mult')
         }
 
     def add_atom(self, atom_data):
