@@ -17,7 +17,7 @@ def parse_cgen(file_path):
     with open(file_path, 'r') as file:
         for line in file:
             line = line.strip()
-            if not line or line.startswith(('*', '#', '!')):
+            if not line or line.startswith(('*', '#', '!', ';')):
                 continue
             elif not line.strip():
                 current_section = None
@@ -96,6 +96,7 @@ def parse_cgen(file_path):
                         'i': angle_data[0],
                         'j': angle_data[1],
                         'k': angle_data[2],
+                        'func': 5, 
                         'ktheta': angle_data[3],
                         'theta0': angle_data[4],
                         'kub': angle_data[5],

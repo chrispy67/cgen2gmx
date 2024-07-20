@@ -206,3 +206,4 @@ class ForceFieldInfo:
 
     def get_impropers(self):
         return pd.DataFrame(self.data['ffbonded.itp']['impropers'])
+

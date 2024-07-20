@@ -86,11 +86,10 @@ import click
 import sys
 
 #to-do:
+# - tie units to appropriate keys for header columns
 # - enforce strict printing format for file generation so it blends in with normal charmm
-#   - running this as of 7/17 will produce a file that shows where work is needed
-#       - surely there is a library for this right?
-#       - also how to handle rounding and sigfigs? 
-#       - handle "nan's" with zeros?
+#   - need to adjust number of digits ahead of decimal places, but nearly there
+# - error handling for the new format_string() function.
 # - write loops, indicated below. 
 
 ###LONG GAME
@@ -116,18 +115,17 @@ def iterate_nested_dict(nested_dict, parent_key=''):
 
 
 #this is how I can access data from the nested list with some over complicated files
+
 ##EXAMPLE
+
 # print(cgen.data['ffbonded.itp'].keys())
 # print(cgen.data['ffbonded.itp']['bonds'])
-# print(cgen.data['ffbonded.itp']['bonds'][0])
+# print(cgen.data['ffbonded.itp']['bonds'][0]) #DOES NOT CONTAIN UNITS 
+# print(cgen.get_angles().keys()) #CONTAINS UNITS 
 
-#same as FF data!
-# print(ff.data['ffbonded.itp']['bonds'][2])
 
 def get_uniques(ff, cgen, index_columns, param):
     try:
-        # ff_df = pd.DataFrame(ff)
-        # cgen_df = pd.DataFrame(cgen)
         merged = cgen.merge(ff, on=index_columns, how='left', indicator=True)
         
         # merge both arrays
@@ -136,17 +134,15 @@ def get_uniques(ff, cgen, index_columns, param):
         # Drop columns from ff_df that are not in index_columns
         columns_to_drop = ff.columns.difference(index_columns)
         columns_to_drop = [col for col in columns_to_drop if col in unique_entries.columns]
-        
-        # remove unique entries and remove extra columns
+
         unique_entries = unique_entries.drop(columns=columns_to_drop)
         unique_entries = unique_entries.drop(columns=['_merge', 'mult_y'], errors='ignore')  # Drop unnecessary columns
 
         # Remove columns and reset index
-        # unique_entries = unique_entries.rename(columns=lambda x: x.rstrip('_x'))
         unique_entries.reset_index(drop=True, inplace=True)
         return pd.DataFrame(unique_entries)
         
-
+    #are there any other errors I can forsee?
     except AttributeError as e:
         print(f'AttributeError: {e}')
         print(f'cannot merge empty array, possibly there are no entires for {param}?')
@@ -182,7 +178,7 @@ unique_impropers = get_uniques(ff.get_impropers(),
     param='impropers')
 
 
-# this is a case where the script is running and there is already a file. might changes this
+# this is a case where the script is running and there is already a file. might change or move this function. 
 if os.path.isfile('ffbonded-edits.dat'):
     if click.confirm('ffbonded-edits.dat exists, would you like to overwrite the previous file?', default=True):
         with open('ffbonded-edits.dat', 'w') as fp:
@@ -194,28 +190,75 @@ if os.path.isfile('ffbonded-edits.dat'):
 # print(unique_bonds.keys()) #contains units!
 # print(unique_bonds['kb_unit'].iloc[0])
 
+def format_string(df, unformatted_string):
+
+    #screen for type of parameter based on headers from incoming dataframe 
+    #there is probably a better way to do this...
+    if all(col in df.columns for col in ['i', 'j', 'func', 'kb', 'b0']): #bonds
+        format_template = "{:>8}  {:>8}  {:>8}   {:>8.8f}    {:>8.2f}" #bonds
+
+        #RECAST
+        split_line = unformatted_string.split()
+        split_line[2] = int(split_line[2])
+        split_line[3] = float(split_line[3])
+        split_line[4] = float(split_line[4])
+        
+        line  = format_template.format(*split_line)
+        
+    elif all(col in df.columns for col in ['i', 'j', 'k', 'func', 'ktheta', 'theta0','kub', 'r0']): #angles
+        format_template = "{:>8}{:>8}{:>8}{:>8}  {:>8.6f}   {:>8.6f}    {:>8.2f}  {:>8.2}"
+        #NO REORDERING NEEDED FOR ANGLES
+        split_line = unformatted_string.split() 
+        split_line[4] = float(split_line[4])
+        split_line[5] = float(split_line[5])
+        split_line[6] = float(split_line[6])
+        split_line[7] = float(split_line[7])
+
+        line = format_template.format(*split_line)
+
+    elif all(col in df.columns for col in ['i', 'j', 'k', 'l', 'func', 'kphi', 'multi', 'phi0']):
+        
+        #REORDER AND RECAST
+        format_template = "{:>8}{:>8}{:>8}{:>8}{:>8}    {:>8.8f}   {:>8.6f}  {:>8}"
+        split_line = unformatted_string.split()
+
+        kphi = float(split_line[5])
+        multi = int(split_line[6])
+        phi0 = float(split_line[7])
+
+        reordered_line = split_line[:5] + [phi0, kphi, multi]
+        line = format_template.format(*reordered_line)
+    elif all(col in df.columns for col in ['i', 'j', 'k', 'l', 'func', 'kphi', 'phi0']):
+        format_template = "{:>8}{:>8}{:>8}{:>8}{:>8}    {:>8.6f}   {:>8.6f}"
+        split_line = unformatted_string.split()
+
+        #RECAST
+        split_line[5] = float(split_line[5])
+        split_line[6] = float(split_line[6])
+
+        line = format_template.format(*split_line)
+    
+    return line
+
+
 def update_charmm(df):
-    # to be printed at the top of each entry in ffbonded-edits.dat
+    # start formatting header to be printed at the top of each entry in ffbonded-edits.dat
     # units are stored in classes.py
     header_columns = [col for col in df.columns if '_unit' not in col]
     units = [col for col in df.columns if '_unit' in col]
 
-    ## PLAY WITH THIS SOME MORE!!
-    # print(df[units].iloc[0])
-    # print('; ' + ', '.join(header_columns))
-
-    file_exists = os.path.isfile('ffbonded-edits.dat')
+    file_exists = os.path.exists('ffbonded-edits.dat')
     with open('ffbonded-edits.dat', 'a' if file_exists else 'w') as f:
-        # Write headers if file does not exist (first write)
-        #THIS IS WHERE FORMATTING/SPACING COMES IN
-        f.write(';'+' '.join(header_columns) + '\n')
+        if not os.path.exists('ffbonded-edits.itp'):
+            f.write(';'+' '.join(header_columns) + '\n')
 
-        if df is not None and hasattr(df, 'iterrows'):
+        if df is not None:
+            df = df.fillna(float(0.0))
             for index, row in df.iterrows():
-                
-                #FORMATTING AND SPACING HERE ALSO
-                line = '   '.join(str(row[col]) if not isinstance(row[col], list) else ' '.join(map(str, row[col])) for col in header_columns)
-                f.write(line + '\n')
+                unformatted_line = '   '.join(str(row[col]) if not isinstance(row[col], list) else ' '.join(map(str, row[col])) for col in header_columns)
+
+                formatted_line = format_string(df, unformatted_line)
+                f.write(formatted_line + '\n')
 
 
 #again, a for loop that does this? I have all these keys stored. much more flexible
@@ -223,25 +266,3 @@ update_charmm(unique_bonds)
 update_charmm(unique_angles)
 update_charmm(unique_dihedrals)
 update_charmm(unique_impropers)
-
-#headers are spaced like this:
-##i       j       k       l       func    phi0 [deg]    kphi [kJ/mol]  
-
-#and the data in the forcefields looks like this:
-#        NH2      CT1        C        O     9     0.000000     0.000000     1
-#        NH2      CT2        C        O     9     0.000000     0.000000     1
-#        NH2      CT1        C      NH1     9     0.000000     0.000000     1
-#        NH2      CT2        C      NH1     9     0.000000     0.000000     1
-#          H      NH2      CT1      CT1     9     0.000000     0.000000     1
-#          H      NH2      CT1        C     9     0.000000     0.000000     1
-#          H      NH2      CT2        C     9     0.000000     0.000000     1
-#          H      NH2      CT1      HB1     9     0.000000     0.460240     3
-#          H      NH2      CT2      HB2     9     0.000000     0.460240     3
-#          H      NH2      CT1      CT2     9     0.000000     0.460240     3
-#          H      NH2      CT1      CT3     9     0.000000     0.460240     3
-#        CAI       CA       CA      CAI     9   180.000000    12.970400     2
-#         CA      CPT      CPT       CA     9   180.000000    12.552000     2
-#        CAI      CPT      CPT      CAI     9   180.000000    12.552000     2
-#         CA       CY      CPT       CA     9   180.000000    12.552000     2
-#         CA       CY      CPT      CAI     9   180.000000    12.552000     2
-#         CA       NY      CPT       CA     9   180.000000    12.552000     2
