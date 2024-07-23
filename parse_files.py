@@ -3,13 +3,6 @@ import pandas as pd
 import re
 from classes import MolecularData, ForceFieldInfo
 
-##to do:
-
-
-# - environment or .yml for for script
-# - demo
-
-
 def parse_cgen(file_path):
     molecular_data = MolecularData()
     current_section = None
@@ -17,7 +10,7 @@ def parse_cgen(file_path):
     with open(file_path, 'r') as file:
         for line in file:
             line = line.strip()
-            if not line or line.startswith(('*', '#', '!', ';')):
+            if not line or line.startswith(('*', '#', '!', ';', 'END ', 'RETURN')):
                 continue
             elif not line.strip():
                 current_section = None
@@ -132,8 +125,9 @@ def parse_cgen(file_path):
                     'j': improper_data[1],
                     'k': improper_data[2],
                     'l': improper_data[3],
-                    'func': improper_data[4],
-                    'kphi': improper_data[5],
+                    'kphi': improper_data[4],
+                    #'func': improper_data[5],
+                    'func': str(2),
                     'phi0': improper_data[6]
                 }
                 
