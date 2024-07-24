@@ -5,6 +5,21 @@ import sys
 import argparse
 import config
 
+# to-do:
+# - tie units to appropriate keys for header columns
+# - error handling for the new format_string() function.
+# - what about an option where I can append all of the new values
+#   to the existing ffbonded.itp in a recognizable way. must make backups
+# - NOT RECOGNIZING BACKWARDS-DEFINED PARAMETERS!
+#   - unsure if there is a convention, but a,b,c,d == d,c,b,a are equivalent interactions, 
+#     yet these backwards matches are not captured by get_uniques() 
+
+###LONG GAME
+# - i/o for files up HERE, will make it easy for end user. 
+# - put in some debug lines with the logger? putting time in here might save time later.
+# - Something that can detect large errors or poor predictions?
+#   - would need to parse this as an optional flag in parse_files.py
+
 
 #may need to change, but this is how I get files
 pwd = '{}/'.format(sys.path[0])
@@ -50,7 +65,7 @@ else:
     print('No unit conversion specified.')
 
 
-#importing functions and files AFTER parsing the arguments is VERY important 
+#importing functions and files AFTER parsing the arguments is VERY important here
 from parse_files import parse_cgen, parse_ff
 from get_uniques import get_uniques, update_charmm
 
@@ -86,8 +101,8 @@ if os.path.isfile(config.output_file):
         sys.exit('canceling')
 
 
-update_charmm(unique_bonds, config.output_file)
-update_charmm(unique_angles, config.output_file)
-update_charmm(unique_dihedrals, config.output_file)
-update_charmm(unique_impropers, config.output_file)
+update_charmm(unique_bonds, config.output_file, cgen.bond_header())
+update_charmm(unique_angles, config.output_file, cgen.angle_header())
+update_charmm(unique_dihedrals, config.output_file, cgen.dihedral_header())
+update_charmm(unique_impropers, config.output_file, cgen.improper_header())
 

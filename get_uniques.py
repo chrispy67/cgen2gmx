@@ -5,20 +5,6 @@ import os
 import click
 import sys
 
-# to-do:
-# - tie units to appropriate keys for header columns
-# - error handling for the new format_string() function.
-# - write loops, indicated below. 
-# - what about an option where I can append all of the new values
-#   to the existing ffbonded.itp in a recognizable way. must make backups 
-
-###LONG GAME
-# - i/o for files up HERE, will make it easy for end user. 
-# - put in some debug lines with the logger? putting time in here might save time later.
-# - Something that can detect large errors or poor predictions?
-#   - would need to parse this as an optional flag in parse_files.py
-
-
 #how to loop through the dictionary and where the keys are addressable.
 def iterate_nested_dict(nested_dict, parent_key=''):
     for key, value in nested_dict.items():
@@ -32,9 +18,6 @@ def iterate_nested_dict(nested_dict, parent_key=''):
 #this is how I can access data from the nested list with some over complicated files
 
 ##EXAMPLE
-
-# print(cgen.data['ffbonded.itp'].keys())
-# print(cgen.data['ffbonded.itp']['bonds'])
 # print(cgen.data['ffbonded.itp']['bonds'][0]) #DOES NOT CONTAIN UNITS 
 # print(cgen.get_angles().keys()) #CONTAINS UNITS 
 
@@ -71,8 +54,6 @@ def get_uniques(ff, cgen, index_columns, param):
             print(f'index_columns: {index_columns}')
 
 
-#could I write a for loop that does this
-
 # print(unique_bonds['kb_unit'].iloc[0])
 
 def format_string(df, unformatted_string):
@@ -81,7 +62,6 @@ def format_string(df, unformatted_string):
     #there is probably a better way to do this...
     if all(col in df.columns for col in ['i', 'j', 'func', 'kb', 'b0']): #bonds
         format_template = "{:>8}  {:>8}  {:>8}   {:>8.8f}    {:>8.2f}" #bonds
-
         #REORDER AND RECAST
         split_line = unformatted_string.split()
 
@@ -94,12 +74,9 @@ def format_string(df, unformatted_string):
 
     elif all(col in df.columns for col in ['i', 'j', 'k', 'func', 'ktheta', 'theta0','kub', 'r0']): #angles
         format_template = "{:>8}{:>8}{:>8}   {:>8}  {:>8.6}   {:>8.6f}  {:>8.4f}  {:>8.4f}"
-        #NO REORDERING NEEDED FOR ANGLES
-
         
         #REORDER AND RECAST
         split_line = unformatted_string.split() 
-        print(split_line)
         
         ktheta = float(split_line[4])
         theta0 = float(split_line[5])
@@ -138,15 +115,16 @@ def format_string(df, unformatted_string):
     return line
 
 
-def update_charmm(df, outfile):
-    # start formatting header to be printed at the top of each entry in ffbonded-edits.dat
+def update_charmm(df, outfile, header):
     # units are stored in classes.py
+
+    #OLD WAY, more elegant
     header_columns = [col for col in df.columns if '_unit' not in col]
     units = [col for col in df.columns if '_unit' in col]
 
     file_exists = os.path.exists(outfile)
     with open(outfile, 'a' if file_exists else 'w') as f:
-        f.write(';'+' '.join(header_columns) + '\n')
+        f.write(header + '\n')
         # if not os.path.exists(outfile):
         #     f.write(';'+' '.join(header_columns) + '\n')
 
