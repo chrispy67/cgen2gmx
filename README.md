@@ -18,9 +18,11 @@ When generating and storing forcefield parameters for several small molecules, d
  #### `--itp`:
  **Path to existing `ffbonded.itp` to be read and parsed.** 
  <br />
-NOTE: There are unique functions for reading both forcefield files and CGenFF outputs. There is some error handling built in to account for missing improper dihedral parameters (common) and small formatting changes, but A POORLY ORGANIZED `ffbonded.itp` FILE WILL CAUSE ISSUES!
+NOTE: There are unique functions for reading both forcefield files and CGenFF outputs. There is some error handling built in to account for missing improper dihedral parameters (common) and small formatting changes, but A POORLY ORGANIZED `ffbonded.itp` FILE WILL CAUSE ISSUES! The output format of this script will fit in well with standard CHARMM forcefields. 
  #### `--output`:
- <br />
+ **Path to desired output file** 
+  <br />
+Output file format closely matches standard CHARMM forcefields. If there is already a file of that name, the option will be given to continue by overwriting or exiting. Header columns are always written for each parameter in `ffbonded.itp`, regardless if any unique parameters are printed out. Units will be indicated where necessary in brackets. 
  #### `--kJ`:
 # Examples 
 # Contributing
