@@ -185,23 +185,19 @@ class MolecularData:
 
     #HARDCODED headers, how can I put units in here?
     def bond_header(self):
-        header = """ [ bonds ]
-;      i        j  func           b0           kb"""
+        header = '[ bonds ]' +'\n'+';      i        j  func           b0[{}]           kb[{}]'
         return str(header)
 
     def angle_header(self):
-        header = """ [ angles ]
-;      i        j        k  func       theta0       ktheta          ub0          kub"""
+        header = '[ angles ]' + '\n'+';      i        j        k  func       theta0[{}]       ktheta[{}]          ub0[{}]          kub[{}]'
         return str(header)
 
     def dihedral_header(self):
-        header = """ [ dihedrals ]
-;      i        j        k        l  func         phi0         kphi  mult"""
+        header = '[ dihedrals ]'+'\n'+';      i        j        k        l  func         phi0[{}]         kphi[{}]  mult'
         return str(header)
 
     def improper_header(self):
-        header = """ [ dihedrals ] ;IMPROPERS
-;      i        j        k        l  func         phi0         kphi"""
+        header = '[ dihedrals ] ;IMPROPERS'+'\n'+';      i        j        k        l  func         phi0[{}]         kphi[{}]'
         return(str(header))
 
 
