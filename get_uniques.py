@@ -118,15 +118,23 @@ def format_string(df, unformatted_string):
 def update_charmm(df, outfile, header):
     # units are stored in classes.py
 
-    #OLD WAY, more elegant
+    #OLD WAY I got header columns, would like to return to this
+    #STILL IMPORTANT TO SCREEN OUT _unit COLUMNS
     header_columns = [col for col in df.columns if '_unit' not in col]
-    units = [col for col in df.columns if '_unit' in col]
+    unit_cols = [col for col in df.columns if '_unit' in col] #list
+
+    # line  = format_template.format(*reordered_line)
+    # Collect all unit values into a single list
+    unique_units = set()
+    for col in unit_cols:
+        unique_units.update(df[col].tolist())
+    unique_units = list(unique_units)
+    # print(unique_units)
+    formatted_header = header.format(*unique_units)
 
     file_exists = os.path.exists(outfile)
     with open(outfile, 'a' if file_exists else 'w') as f:
-        f.write(header + '\n')
-        # if not os.path.exists(outfile):
-        #     f.write(';'+' '.join(header_columns) + '\n')
+        f.write(formatted_header + '\n')
 
         if df is not None:
             df = df.fillna(float(0.0))
