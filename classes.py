@@ -87,37 +87,36 @@ class MolecularData:
 
     def get_angles(self):
         df = pd.DataFrame(self.data['ffbonded.itp']['angles'])
-        df[['ktheta', 'theta0', 'kub', 'r0']] = df[['ktheta', 'theta0', 'kub', 'r0']].apply(pd.to_numeric, errors='coerce')
+        df[['ktheta', 'theta0', 'kub', 'ub0']] = df[['ktheta', 'theta0', 'kub', 'ub0']].apply(pd.to_numeric, errors='coerce')
 
         if unit_convert:
             theta_factor = 1 #deg -> deg
             ktheta_factor = 8.368 #kcal -> kJ * func_5_factor
-            r0_factor = 0.1 #Å -> nm
+            ub0_factor = 0.1 #Å -> nm
             kub_factor = 836.8 #kcal/molÅ^-2 -> kJ/mol*nm^-2 #CORRECT FOR FUNC_5
             df['theta0'] *= theta_factor #for redundancy, units are same (deg)
             df['ktheta'] *= ktheta_factor
             df['kub'] *= kub_factor
-            df['r0'] *= r0_factor
+            df['ub0'] *= ub0_factor
 
             #UNITS
             unit_dict = {
                 'ktheta': 'kJ/mol',
                 'theta0': 'deg',
                 'kub': 'kJ/mol*nm^-2',
-                'r0': 'nm'} 
+                'ub0': 'nm'} 
         else:
             #UNITS
             unit_dict = {
                 'ktheta': 'kcal/mol',
                 'theta0': 'deg',
                 'kub': 'kcal/mol*Å^-2',
-                'r0': 'Å'} 
+                'ub0': 'Å'} 
 
         # Rename the unit columns to distinguish from the original columns
         units_df = pd.DataFrame({key: [value] for key, value in unit_dict.items()}) # (1, 4)
         units_df = pd.concat([units_df] * len(df), ignore_index=True) # (len(parsed_entries), 4) each column is the same value
         units_df = units_df.add_suffix('_unit')
-        
         df_with_units = pd.concat([df, units_df], axis=1)# (len(parsed_entries), 11)
 
         return df_with_units
@@ -156,11 +155,9 @@ class MolecularData:
         
         try: #often empty
             df[['kphi', 'phi0']] = df[['kphi', 'phi0']].apply(pd.to_numeric, errors='coerce')
-            return pd.DataFrame(df)
 
         except KeyError as e:
             print(f'Key Error! {e}', 'is the parameter field entry?')
-
         if unit_convert:
             keta_factor = 8.368 #kcal/mol -> kJ/mol *2
             eta0_factor = 1 #deg -> deg 
@@ -180,27 +177,24 @@ class MolecularData:
         units_df = units_df.add_suffix('_unit')        
 
         df_with_units = pd.concat([df, units_df], axis=1)# (len(parsed_entries), 11)
-        
         return df_with_units
 
     #HARDCODED headers, how can I put units in here?
     def bond_header(self):
-        header = '[ bonds ]' +'\n'+';      i        j  func           b0[{}]           kb[{}]'
+        header = '[ bonds ]' +'\n'+'; i        j          func      b0[b0_unit]         kb[kb_unit]'
         return str(header)
 
     def angle_header(self):
-        header = '[ angles ]' + '\n'+';      i        j        k  func       theta0[{}]       ktheta[{}]          ub0[{}]          kub[{}]'
+        header = '[ angles ]' + '\n'+'; i        j        k           func  theta0[theta0_unit]  ktheta[ktheta_unit]  ub0[ub0_unit]    kub[kub_unit]'
         return str(header)
 
     def dihedral_header(self):
-        header = '[ dihedrals ]'+'\n'+';      i        j        k        l  func         phi0[{}]         kphi[{}]  mult'
+        header = '[ dihedrals ]'+'\n'+'; i       j       k       l         func   phi0[phi0_unit]   kphi[kphi_unit] mult'
         return str(header)
 
     def improper_header(self):
-        header = '[ dihedrals ] ;IMPROPERS'+'\n'+';      i        j        k        l  func         phi0[{}]         kphi[{}]'
+        header = '[ dihedrals ] ;IMPROPERS'+'\n'+'; i       j       k       l         func   phi0[phi0_unit]   kphi[kphi_unit]'
         return(str(header))
-
-
 
 
 #nearly identical class to Molecular Data

@@ -4,6 +4,7 @@ from parse_files import parse_cgen, parse_ff
 import os
 import click
 import sys
+import config
 
 #how to loop through the dictionary and where the keys are addressable.
 def iterate_nested_dict(nested_dict, parent_key=''):
@@ -15,15 +16,50 @@ def iterate_nested_dict(nested_dict, parent_key=''):
             print(f"{full_key}")
 
 
-#this is how I can access data from the nested list with some over complicated files
-
 ##EXAMPLE
 # print(cgen.data['ffbonded.itp']['bonds'][0]) #DOES NOT CONTAIN UNITS 
 # print(cgen.get_angles().keys()) #CONTAINS UNITS 
 
 
+def create_entries_set(df, index_columns):
+    entries_set = set()
+    for row in df[index_columns].values:
+        direct_entry = tuple(row)
+        reversed_entry = tuple(row[::-1])
+        entries_set.add(direct_entry)
+        entries_set.add(reversed_entry)
+    return entries_set
+
+# ff = parse_ff(config.input_file_CHARMM) #class
+
+
 def get_uniques(ff, cgen, index_columns, param):
+
     try:
+        if config.reverse_entries: #WIP
+        ##JUMBLES THE ORDER???
+            ff_entries = create_entries_set(ff, index_columns) 
+            cgen_entries = create_entries_set(cgen, index_columns)
+            print('checking reverse entries...')
+    
+            # # screen for unique entries into df
+            unique_entries = [entry for entry in cgen_entries if entry not in ff_entries]
+            unique_entries_df = pd.DataFrame(unique_entries, columns=index_columns)
+    
+            # # this merge checks for duplicates in 4 columns and merges them with EXISTING
+            # # parameters found in CGEN file
+            unique_entries_df = unique_entries_df.merge(cgen, on=index_columns, how='left')
+    
+            columns_to_drop = ff.columns.difference(index_columns)
+            unique_entries_df = unique_entries_df.drop(columns=columns_to_drop, errors='ignore')
+            unique_entries_df.reset_index(drop=True, inplace=True)
+            unique_entries_df = unique_entries_df.dropna()
+    
+            unique_entries_df.reset_index(drop=True, inplace=True)  
+            return unique_entries_df
+        
+        ##OLD WAY
+        # merging two dfs
         merged = cgen.merge(ff, on=index_columns, how='left', indicator=True)
         
         # merge both arrays
@@ -32,13 +68,12 @@ def get_uniques(ff, cgen, index_columns, param):
         # Drop columns from ff_df that are not in index_columns
         columns_to_drop = ff.columns.difference(index_columns)
         columns_to_drop = [col for col in columns_to_drop if col in unique_entries.columns]
-
-        unique_entries = unique_entries.drop(columns=columns_to_drop)
-        unique_entries = unique_entries.drop(columns=['_merge', 'mult_y'], errors='ignore')  # Drop unnecessary columns
+        unique_entries_df = unique_entries.drop(columns=columns_to_drop)
+        unique_entries_df = unique_entries.drop(columns=['_merge', 'mult_y'], errors='ignore')  # Drop unnecessary columns
 
         # Remove columns and reset index
-        unique_entries.reset_index(drop=True, inplace=True)
-        return pd.DataFrame(unique_entries)
+        unique_entries_df.reset_index(drop=True, inplace=True)
+        return unique_entries_df
         
     #are there any other errors I can forsee?
     except AttributeError as e:
@@ -54,6 +89,7 @@ def get_uniques(ff, cgen, index_columns, param):
             print(f'index_columns: {index_columns}')
 
 
+
 # print(unique_bonds['kb_unit'].iloc[0])
 
 def format_string(df, unformatted_string):
@@ -61,7 +97,7 @@ def format_string(df, unformatted_string):
     #screen for type of parameter based on headers from incoming dataframe 
     #there is probably a better way to do this...
     if all(col in df.columns for col in ['i', 'j', 'func', 'kb', 'b0']): #bonds
-        format_template = "{:>8}  {:>8}  {:>8}   {:>8.8f}    {:>8.2f}" #bonds
+        format_template = "{:>8}  {:>8}  {:>8}   {:>8.5f}        {:>8.2f}" #bonds
         #REORDER AND RECAST
         split_line = unformatted_string.split()
 
@@ -72,9 +108,8 @@ def format_string(df, unformatted_string):
         reordered_line = split_line[:2] + [func, b0, kb]
         line  = format_template.format(*reordered_line)
 
-    elif all(col in df.columns for col in ['i', 'j', 'k', 'func', 'ktheta', 'theta0','kub', 'r0']): #angles
-        format_template = "{:>8}{:>8}{:>8}   {:>8}  {:>8.6}   {:>8.6f}  {:>8.4f}  {:>8.4f}"
-        
+    elif all(col in df.columns for col in ['i', 'j', 'k', 'func', 'ktheta', 'theta0','kub', 'ub0']): #angles
+        format_template = "{:>8}{:>8}{:>8}   {:>8}    {:>8.3f}   {:>8.5f}  {:>6.4f}  {:>8.4f}"
         #REORDER AND RECAST
         split_line = unformatted_string.split() 
         
@@ -89,7 +124,7 @@ def format_string(df, unformatted_string):
     elif all(col in df.columns for col in ['i', 'j', 'k', 'l', 'func', 'kphi', 'multi', 'phi0']): #dihedrals
         
         #REORDER AND RECAST
-        format_template = "{:>8}{:>8}{:>8}{:>8}{:>8}    {:>8.8f}   {:>8.6f}  {:>8}"
+        format_template = "{:>8}{:>8}{:>8}{:>8}{:>8}    {:>8.4f}   {:>8.5f}     {:>1}"
         split_line = unformatted_string.split()
 
         kphi = float(split_line[5])
@@ -100,7 +135,7 @@ def format_string(df, unformatted_string):
         line = format_template.format(*reordered_line)
 
     elif all(col in df.columns for col in ['i', 'j', 'k', 'l', 'func', 'kphi', 'phi0']): #impropers
-        format_template = "{:>8}{:>8}{:>8}{:>8} {:>8}    {:>8.6f}   {:>8.6f}"
+        format_template = "{:>8}{:>8}{:>8}{:>8}{:>8}    {:>8.4f}   {:>8.5f}"
         split_line = unformatted_string.split()
 
         #REORDER AND RECAST
@@ -114,23 +149,19 @@ def format_string(df, unformatted_string):
     
     return line
 
-
 def update_charmm(df, outfile, header):
-    # units are stored in classes.py
 
-    #OLD WAY I got header columns, would like to return to this
-    #STILL IMPORTANT TO SCREEN OUT _unit COLUMNS
-    header_columns = [col for col in df.columns if '_unit' not in col]
-    unit_cols = [col for col in df.columns if '_unit' in col] #list
-
-    # line  = format_template.format(*reordered_line)
-    # Collect all unit values into a single list
-    unique_units = set()
+    # Create a mapping between unit columns and their respective units
+    # Necessary when reordering of the columns in format_string()
+    unit_mapping = {}
+    unit_cols = [col for col in df.columns if '_unit' in col]
     for col in unit_cols:
-        unique_units.update(df[col].tolist())
-    unique_units = list(unique_units)
-    # print(unique_units)
-    formatted_header = header.format(*unique_units)
+        unit_mapping[col.replace('_unit', '')] = df[col].iloc[0] 
+    
+    # This redefine is crucial here
+    formatted_header = header
+    for key, unit in unit_mapping.items():
+        formatted_header = formatted_header.replace(f'[{key}_unit]', f'[{unit}]')
 
     file_exists = os.path.exists(outfile)
     with open(outfile, 'a' if file_exists else 'w') as f:
@@ -138,9 +169,11 @@ def update_charmm(df, outfile, header):
 
         if df is not None:
             df = df.fillna(float(0.0))
+            header_columns = [col for col in df.columns if '_unit' not in col]
             for index, row in df.iterrows():
                 unformatted_line = '   '.join(str(row[col]) if not isinstance(row[col], list) else ' '.join(map(str, row[col])) for col in header_columns)
 
                 formatted_line = format_string(df, unformatted_line)
                 f.write(formatted_line + '\n')
+
 
