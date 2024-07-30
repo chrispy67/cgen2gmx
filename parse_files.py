@@ -82,7 +82,7 @@ def parse_cgen(file_path):
                         'ktheta': angle_data[3],
                         'theta0': angle_data[4],
                         'kub': float(0.00),
-                        'r0': float(0.00)
+                        'ub0': float(0.00)
                     }
                 else:
                         row = {
@@ -93,7 +93,7 @@ def parse_cgen(file_path):
                         'ktheta': angle_data[3],
                         'theta0': angle_data[4],
                         'kub': angle_data[5],
-                        'r0': angle_data[6]
+                        'ub0': angle_data[6]
                     }
                 molecular_data.add_angles(row)
             

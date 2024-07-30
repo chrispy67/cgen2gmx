@@ -6,6 +6,7 @@ import argparse
 import config
 
 # to-do:
+# - update_charmm() can't hang with the empty set()
 # - error handling for the new format_string() function.
 # - NOT RECOGNIZING BACKWARDS-DEFINED PARAMETERS!
 #   - unsure if there is a convention, but a,b,c,d and d,c,b,a are equivalent interactions, 
@@ -40,8 +41,6 @@ parser.add_argument('--output', type=str,
     an additional prompt will be presented to exit""")
 
 #boolean flag for units, need another for kcals!
-#this would be good to handle in the classes.py, changing the output of the df units
-#currently not functional
 unit_inputs = ['--kj', '--kJ', '--kJ/mol', '--kJ*mol^-1']
 parser.add_argument(*unit_inputs, dest='convert_to_kj', action='store_true',
     help='Specifying units (CgenFF uses kcal/mol, but GROMACS needs kJ/mol.')
@@ -68,10 +67,12 @@ from get_uniques import get_uniques, update_charmm
 ff = parse_ff(config.input_file_CHARMM) #class
 cgen = parse_cgen(config.input_file_CGEN) #class
 
+
 unique_bonds = get_uniques(ff.get_bonds(), 
     cgen.get_bonds(), 
     list(ff.get_bonds().keys()),
     param='bonds')
+
 
 unique_angles = get_uniques(ff.get_angles(), 
     cgen.get_angles(),
@@ -88,7 +89,7 @@ unique_impropers = get_uniques(ff.get_impropers(),
     list(ff.get_impropers().keys()),
     param='impropers')
 
-#
+# #
 if os.path.isfile(config.output_file):
     if click.confirm(f'{config.output_file} exists, would you like to overwrite the previous file?', default=True):
         with open(config.output_file, 'w') as fp:
