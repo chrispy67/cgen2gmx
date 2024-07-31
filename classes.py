@@ -4,9 +4,8 @@ import re
 import os
 import config
 
-#NOT BEING UPDATED 
 
-
+# import user flags stored in config file
 input_file_CHARMM = config.input_file_CHARMM
 input_file_CGEN = config.input_file_CGEN
 output_file = config.output_file
@@ -15,6 +14,8 @@ unit_convert = config.convert_to_kj
 
 class MolecularData:
     def __init__(self):
+        
+        #broken down by file type for future functionality
         self.data = {
             'merged.rtp': {
                 'atom': [],
@@ -46,11 +47,14 @@ class MolecularData:
     def add_impropers(self, improper_data):
         self.data['ffbonded.itp']['impropers'].append(improper_data)
 
-#retrieve data from the class w/ 
+#retrieve data from the class
+
     def get_atoms(self):
+        #not used yet; the issue of unique entries is not present in merged.rtp
         return pd.DataFrame(self.data['merged.rtp']['atom'])
 
     def get_connectivity(self):
+        #not used yet; the issue of unique entries is not present in merged.rtp
         return pd.DataFrame(self.data['merged.rtp']['connectivity'])
 
     def get_bonds(self):
@@ -58,6 +62,7 @@ class MolecularData:
         df['b0'] = pd.to_numeric(df['b0'], errors='coerce')
         df['kb'] = pd.to_numeric(df['kb'], errors='coerce')
 
+        #CGEN uses kcal by default, but GROAMCS uses kJ
         if unit_convert:
             b0_factor = 0.1 #Å -> nm
             kb_factor = 836.8 #kcal/molÅ^-2 -> kJ/mol*nm^-2 #CORRECT FOR FUNC_1
@@ -81,6 +86,7 @@ class MolecularData:
         
         df_with_units = pd.concat([df, units_df], axis=1)# (len(parsed_entries), 11)
 
+        # df containing all entries from cgen file with units in each row of *_unit keys
         return df_with_units
 
 #angles: ;      i        j        k  func       theta0       ktheta      ub0       kub
@@ -89,6 +95,7 @@ class MolecularData:
         df = pd.DataFrame(self.data['ffbonded.itp']['angles'])
         df[['ktheta', 'theta0', 'kub', 'ub0']] = df[['ktheta', 'theta0', 'kub', 'ub0']].apply(pd.to_numeric, errors='coerce')
 
+        #CGEN uses kcal by default, but GROAMCS uses kJ
         if unit_convert:
             theta_factor = 1 #deg -> deg
             ktheta_factor = 8.368 #kcal -> kJ * func_5_factor
@@ -119,12 +126,14 @@ class MolecularData:
         units_df = units_df.add_suffix('_unit')
         df_with_units = pd.concat([df, units_df], axis=1)# (len(parsed_entries), 11)
 
+        # df containing all entries from cgen file with units in each row of *_unit keys
         return df_with_units
 
     def get_dihedrals(self):
         df = pd.DataFrame(self.data['ffbonded.itp']['dihedrals'])
         df[['kphi', 'phi0', ]] = df[['kphi', 'phi0']].apply(pd.to_numeric, errors='coerce')
 
+        #CGEN uses kcal by default, but GROAMCS uses kJ
         if unit_convert:
             phi_0_factor = 1 #deg -> deg
             kphi_factor = 4.184 #kcal -> kJ
@@ -147,6 +156,7 @@ class MolecularData:
         
         df_with_units = pd.concat([df, units_df], axis=1)# (len(parsed_entries), 11)
 
+        # df containing all entries from cgen file with units in each row of *_unit keys
         return df_with_units
 
 
@@ -158,6 +168,8 @@ class MolecularData:
 
         except KeyError as e:
             print(f'Key Error! {e}', 'is the parameter field entry?')
+        
+        #CGEN uses kcal by default, but GROAMCS uses kJ
         if unit_convert:
             keta_factor = 8.368 #kcal/mol -> kJ/mol *2
             eta0_factor = 1 #deg -> deg 
@@ -177,9 +189,11 @@ class MolecularData:
         units_df = units_df.add_suffix('_unit')        
 
         df_with_units = pd.concat([df, units_df], axis=1)# (len(parsed_entries), 11)
+
+        # df containing all entries from cgen file with units in each row of *_unit keys
         return df_with_units
 
-    #HARDCODED headers, how can I put units in here?
+    #HARDCODED headers that are standard for modern CHARMM forcefields
     def bond_header(self):
         header = '[ bonds ]' +'\n'+'; i        j          func      b0[b0_unit]         kb[kb_unit]'
         return str(header)
@@ -197,7 +211,7 @@ class MolecularData:
         return(str(header))
 
 
-#nearly identical class to Molecular Data
+#nearly identical class to MolecularData, but less functionality
 
 class ForceFieldInfo:
 

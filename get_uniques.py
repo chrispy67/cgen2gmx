@@ -6,7 +6,7 @@ import click
 import sys
 import config
 
-#how to loop through the dictionary and where the keys are addressable.
+# How to loop through the dictionary and where the keys are addressable.
 def iterate_nested_dict(nested_dict, parent_key=''):
     for key, value in nested_dict.items():
         full_key = f"{parent_key}.{key}" if parent_key else key
@@ -21,6 +21,7 @@ def iterate_nested_dict(nested_dict, parent_key=''):
 # print(cgen.get_angles().keys()) #CONTAINS UNITS 
 
 
+# WIP, checking for backwards entries is off by default. 
 def create_entries_set(df, index_columns):
     entries_set = set()
     for row in df[index_columns].values:
@@ -30,13 +31,13 @@ def create_entries_set(df, index_columns):
         entries_set.add(reversed_entry)
     return entries_set
 
-# ff = parse_ff(config.input_file_CHARMM) #class
-
 
 def get_uniques(ff, cgen, index_columns, param):
 
     try:
         if config.reverse_entries: #WIP
+            print('WIP--not checking for backwards entries')
+            pass
         ##JUMBLES THE ORDER???
             ff_entries = create_entries_set(ff, index_columns) 
             cgen_entries = create_entries_set(cgen, index_columns)
@@ -46,8 +47,8 @@ def get_uniques(ff, cgen, index_columns, param):
             unique_entries = [entry for entry in cgen_entries if entry not in ff_entries]
             unique_entries_df = pd.DataFrame(unique_entries, columns=index_columns)
     
-            # # this merge checks for duplicates in 4 columns and merges them with EXISTING
-            # # parameters found in CGEN file
+            # this merge checks for duplicates in 4 columns and merges them with EXISTING
+            # parameters found in CGEN file
             unique_entries_df = unique_entries_df.merge(cgen, on=index_columns, how='left')
     
             columns_to_drop = ff.columns.difference(index_columns)
@@ -58,7 +59,7 @@ def get_uniques(ff, cgen, index_columns, param):
             unique_entries_df.reset_index(drop=True, inplace=True)  
             return unique_entries_df
         
-        ##OLD WAY
+        # Traditional matches
         # merging two dfs
         merged = cgen.merge(ff, on=index_columns, how='left', indicator=True)
         
@@ -75,7 +76,6 @@ def get_uniques(ff, cgen, index_columns, param):
         unique_entries_df.reset_index(drop=True, inplace=True)
         return unique_entries_df
         
-    #are there any other errors I can forsee?
     except AttributeError as e:
         print(f'AttributeError: {e}')
         print(f'cannot merge empty array, possibly there are no entires for {param}?')
@@ -89,18 +89,17 @@ def get_uniques(ff, cgen, index_columns, param):
             print(f'index_columns: {index_columns}')
 
 
-
 # print(unique_bonds['kb_unit'].iloc[0])
 
 def format_string(df, unformatted_string):
 
-    #screen for type of parameter based on headers from incoming dataframe 
-    #there is probably a better way to do this...
+    # Screen for type of parameter based on headers from incoming dataframe 
+    # There may be a more flexible way to do this
     if all(col in df.columns for col in ['i', 'j', 'func', 'kb', 'b0']): #bonds
-        format_template = "{:>8}  {:>8}  {:>8}   {:>8.5f}        {:>8.2f}" #bonds
+        format_template = "{:>8}  {:>8}  {:>8}   {:>8.5f}        {:>8.2f}" 
+        
         #REORDER AND RECAST
         split_line = unformatted_string.split()
-
         func = int(split_line[2])
         kb = float(split_line[3])
         b0 = float(split_line[4])
@@ -110,9 +109,9 @@ def format_string(df, unformatted_string):
 
     elif all(col in df.columns for col in ['i', 'j', 'k', 'func', 'ktheta', 'theta0','kub', 'ub0']): #angles
         format_template = "{:>8}{:>8}{:>8}   {:>8}    {:>8.3f}   {:>8.5f}  {:>6.4f}  {:>8.4f}"
+        
         #REORDER AND RECAST
         split_line = unformatted_string.split() 
-        
         ktheta = float(split_line[4])
         theta0 = float(split_line[5])
         r0 = float(split_line[7])
@@ -122,11 +121,10 @@ def format_string(df, unformatted_string):
         line = format_template.format(*reordered_line)
 
     elif all(col in df.columns for col in ['i', 'j', 'k', 'l', 'func', 'kphi', 'multi', 'phi0']): #dihedrals
-        
-        #REORDER AND RECAST
         format_template = "{:>8}{:>8}{:>8}{:>8}{:>8}    {:>8.4f}   {:>8.5f}     {:>1}"
-        split_line = unformatted_string.split()
 
+        #REORDER AND RECAST
+        split_line = unformatted_string.split()
         kphi = float(split_line[5])
         multi = int(split_line[6])
         phi0 = float(split_line[7])
@@ -136,27 +134,34 @@ def format_string(df, unformatted_string):
 
     elif all(col in df.columns for col in ['i', 'j', 'k', 'l', 'func', 'kphi', 'phi0']): #impropers
         format_template = "{:>8}{:>8}{:>8}{:>8}{:>8}    {:>8.4f}   {:>8.5f}"
-        split_line = unformatted_string.split()
 
         #REORDER AND RECAST
+        split_line = unformatted_string.split()
         kphi = float(split_line[4])
         func = split_line[5]
         phi0 = float(split_line[6])
 
         reordered_line = split_line[:4] + [func, phi0, kphi]
-        # print(reordered_line)
         line = format_template.format(*reordered_line)
     
     return line
 
-def update_charmm(df, outfile, header):
+
+def update_charmm(df, outfile, header, param):
 
     # Create a mapping between unit columns and their respective units
     # Necessary when reordering of the columns in format_string()
     unit_mapping = {}
     unit_cols = [col for col in df.columns if '_unit' in col]
-    for col in unit_cols:
-        unit_mapping[col.replace('_unit', '')] = df[col].iloc[0] 
+    try:
+        for col in unit_cols:
+            unit_mapping[col.replace('_unit', '')] = df[col].iloc[0] 
+    
+    # to circumvent an empty array from get_uniques() which doesn't have df[col].iloc[0]
+    except IndexError as e:
+        unit_mapping = {}
+        print(e, ' *from update_charmm() from get_uniques.py*')
+        print(f' - It is likely that no unique {param} were found in --itp input')
     
     # This redefine is crucial here
     formatted_header = header

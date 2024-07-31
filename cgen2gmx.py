@@ -73,7 +73,6 @@ unique_bonds = get_uniques(ff.get_bonds(),
     list(ff.get_bonds().keys()),
     param='bonds')
 
-
 unique_angles = get_uniques(ff.get_angles(), 
     cgen.get_angles(),
     list(ff.get_angles().keys()),
@@ -97,9 +96,8 @@ if os.path.isfile(config.output_file):
     else:  
         sys.exit('canceling')
 
-
-update_charmm(unique_bonds, config.output_file, cgen.bond_header())
-update_charmm(unique_angles, config.output_file, cgen.angle_header())
-update_charmm(unique_dihedrals, config.output_file, cgen.dihedral_header())
-update_charmm(unique_impropers, config.output_file, cgen.improper_header())
+update_charmm(unique_bonds, config.output_file, cgen.bond_header(), param='bonds')
+update_charmm(unique_angles, config.output_file, cgen.angle_header(), param='angles')
+update_charmm(unique_dihedrals, config.output_file, cgen.dihedral_header(), param='dihderals')
+update_charmm(unique_impropers, config.output_file, cgen.improper_header(), param='imrpropers')
 
