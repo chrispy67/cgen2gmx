@@ -1,0 +1,134 @@
+CHARMM General Force Field (CGenFF) program version 4.0
+released June 2024
+Copyright (C) 2020 SilcBio LLC
+and University of Maryland, School of Pharmacy. All Rights Reserved.
+
+Licensed to:
+cgenff server
+serverncgenff
+
+License expires: Tue Dec 31 00:00:00 2030
+
+readpar debug: read 683 bonds, 2501 angles, 7460 dihedrals, 203 impropers
+               and 375437 characters worth of comments.
+readmol2 warning: renaming non-unique atom CA to CA4 .
+readmol2 warning: renaming non-unique atom CA to CA5 .
+readmol2 warning: renaming non-unique atom CA to CA6 .
+readmol2 warning: renaming non-unique atom CA to CA7 .
+readmol2 warning: renaming non-unique atom CB to CB3 .
+readmol2 warning: renaming non-unique atom CB to CB4 .
+readmol2 warning: renaming non-unique atom CB to CB5 .
+readmol2 warning: renaming non-unique atom CB to CB6 .
+readmol2 warning: renaming non-unique atom CD1 to CD3 .
+readmol2 warning: renaming non-unique atom CD2 to CD4 .
+readmol2 warning: renaming non-unique atom CE1 to CE3 .
+readmol2 warning: renaming non-unique atom CE2 to CE4 .
+readmol2 warning: renaming non-unique atom CG to CG3 .
+readmol2 warning: renaming non-unique atom CG to CG4 .
+readmol2 warning: renaming non-unique atom CG1 to CG5 .
+readmol2 warning: renaming non-unique atom CG2 to CG6 .
+readmol2 warning: renaming non-unique atom CG2 to CG7 .
+readmol2 warning: renaming non-unique atom CZ to CZ1 .
+readmol2 warning: renaming non-unique atom CZ to CZ2 .
+readmol2 warning: renaming non-unique atom H01 to H010 .
+readmol2 warning: renaming non-unique atom H01 to H011 .
+readmol2 warning: renaming non-unique atom H01 to H012 .
+readmol2 warning: renaming non-unique atom H01 to H013 .
+readmol2 warning: renaming non-unique atom H02 to H014 .
+readmol2 warning: renaming non-unique atom H02 to H015 .
+readmol2 warning: renaming non-unique atom H02 to H016 .
+readmol2 warning: renaming non-unique atom H02 to H017 .
+readmol2 warning: renaming non-unique atom H03 to H018 .
+readmol2 warning: renaming non-unique atom H03 to H019 .
+readmol2 warning: renaming non-unique atom H03 to H020 .
+readmol2 warning: renaming non-unique atom H03 to H021 .
+readmol2 warning: renaming non-unique atom H04 to H022 .
+readmol2 warning: renaming non-unique atom H04 to H023 .
+readmol2 warning: renaming non-unique atom H04 to H024 .
+readmol2 warning: renaming non-unique atom H04 to H025 .
+readmol2 warning: renaming non-unique atom H05 to H026 .
+readmol2 warning: renaming non-unique atom H05 to H027 .
+readmol2 warning: renaming non-unique atom H05 to H028 .
+readmol2 warning: renaming non-unique atom H05 to H029 .
+readmol2 warning: renaming non-unique atom H06 to H030 .
+readmol2 warning: renaming non-unique atom H06 to H031 .
+readmol2 warning: renaming non-unique atom H06 to H032 .
+readmol2 warning: renaming non-unique atom H06 to H033 .
+readmol2 warning: renaming non-unique atom H07 to H034 .
+readmol2 warning: renaming non-unique atom H07 to H035 .
+readmol2 warning: renaming non-unique atom H07 to H036 .
+readmol2 warning: renaming non-unique atom H07 to H037 .
+readmol2 warning: renaming non-unique atom H08 to H038 .
+readmol2 warning: renaming non-unique atom H08 to H039 .
+readmol2 warning: renaming non-unique atom H08 to H040 .
+readmol2 warning: renaming non-unique atom H08 to H041 .
+readmol2 warning: renaming non-unique atom H09 to H042 .
+readmol2 warning: renaming non-unique atom H09 to H043 .
+readmol2 warning: renaming non-unique atom H09 to H044 .
+readmol2 warning: renaming non-unique atom OG1 to OG2 .
+readmol2 warning: renaming non-unique atom C to C3 .
+readmol2 warning: renaming non-unique atom C to C4 .
+readmol2 warning: renaming non-unique atom C to C5 .
+readmol2 warning: renaming non-unique atom C to C6 .
+readmol2 warning: renaming non-unique atom C to C7 .
+readmol2 warning: renaming non-unique atom N to N1 .
+readmol2 warning: renaming non-unique atom N to N4 .
+readmol2 warning: renaming non-unique atom N to N5 .
+readmol2 warning: renaming non-unique atom N to N6 .
+readmol2 warning: renaming non-unique atom N to N7 .
+readmol2 warning: renaming non-unique atom O to O1 .
+readmol2 warning: renaming non-unique atom O to O4 .
+readmol2 warning: renaming non-unique atom O to O5 .
+readmol2 warning: renaming non-unique atom O to O6 .
+Now processing molecule TF_CRO_V ...
+ringper debug: stored 6-membered ring in stage 1.
+ringper debug: stored 6-membered ring in stage 1.
+ringper debug: stored 5-membered ring in stage 1.
+resonance debug: found perfect resonance chain with
+charge 0 ( 0 positive and 0 negative centers) and 0 potential aromatic rings
+resonance debug: found perfect resonance chain with
+charge 0 ( 0 positive and 0 negative centers) and 0 potential aromatic rings
+resonance debug: found perfect resonance chain with
+charge 0 ( 0 positive and 0 negative centers) and 0 potential aromatic rings
+resonance debug: found perfect resonance chain with
+charge 0 ( 0 positive and 0 negative centers) and 0 potential aromatic rings
+resonance debug: found better resonance chain with
+charge 0 ( 0 positive and 0 negative centers) and 1 potential aromatic rings
+paranalogy debug: finding analogy for dihedral HGPAM2 NG321 CG311 CG2O1
+paranalogy debug: finding analogy for dihedral NG321 CG311 CG2O1 OG2D1
+paranalogy debug: "smart algorithm" found no matching parameters;
+switching to "exhaustive algorithm"
+paranalogy debug: finding analogy for dihedral NG321 CG311 CG2O1 NG2S1
+paranalogy debug: "smart algorithm" found no matching parameters;
+switching to "exhaustive algorithm"
+paranalogy debug: finding analogy for dihedral CG2O4 CG311 CG321 CG321
+paranalogy debug: finding analogy for CG2O1 CG311 NG321
+paranalogy debug: finding analogy for dihedral HGPAM2 NG321 CG311 CG2O1
+paranalogy debug: finding analogy for dihedral HGPAM2 NG321 CG311 CG2O1
+paranalogy debug: finding analogy for dihedral NG321 CG311 CG2O1 OG2D1
+paranalogy debug: "smart algorithm" found no matching parameters;
+switching to "exhaustive algorithm"
+paranalogy debug: finding analogy for dihedral NG321 CG311 CG2O1 NG2S1
+paranalogy debug: "smart algorithm" found no matching parameters;
+switching to "exhaustive algorithm"
+paranalogy debug: finding analogy for dihedral CG311 CG2O1 NG2S1 CG311
+paranalogy debug: finding analogy for dihedral CG311 CG2O1 NG2S1 CG311
+paranalogy debug: finding analogy for dihedral CG2R53 CG311 CG311 CG331
+paranalogy debug: finding analogy for dihedral CG2R53 CG311 CG311 OG311
+paranalogy debug: "smart algorithm" found no matching parameters;
+switching to "exhaustive algorithm"
+paranalogy debug: finding analogy for dihedral CG2R53 CG311 CG311 HGA1
+paranalogy debug: finding analogy for dihedral CG311 CG311 CG2R53 NG2R50
+paranalogy debug: finding analogy for dihedral CG311 CG311 CG2R53 NG2R51
+paranalogy debug: finding analogy for dihedral CG311 CG2R53 NG2R51 CG321
+paranalogy debug: finding analogy for dihedral CG311 CG2O1 NG2S1 CG311
+paranalogy debug: finding analogy for dihedral CG321 CG311 CG2O4 OG2D1
+paranalogy debug: finding analogy for dihedral CG321 CG311 CG2O4 HGR52
+paranalogy debug: finding analogy for dihedral CG2O4 CG311 CG321 CG321
+paranalogy debug: finding analogy for dihedral CG2O4 CG311 CG321 HGA2
+paranalogy debug: finding analogy for dihedral CG2O4 CG311 CG321 HGA2
+paranalogy debug: finding analogy for CG2O1 CG311 NG321
+paranalogy debug: "smart algorithm" found no matching parameters;
+switching to "exhaustive algorithm"
+paranalogy debug: finding analogy for CG2R53 CG311 CG311
+paranalogy debug: finding analogy for CG321 CG311 CG2O4
