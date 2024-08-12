@@ -61,8 +61,8 @@ else:
 
 
 #importing functions and files AFTER parsing the arguments is VERY important here
-from parse_files import parse_cgen, parse_ff
-from get_uniques import get_uniques, update_charmm
+from src.parse_files import parse_cgen, parse_ff
+from src.get_uniques import get_uniques, update_charmm
 
 ff = parse_ff(config.input_file_CHARMM) #class
 cgen = parse_cgen(config.input_file_CGEN) #class

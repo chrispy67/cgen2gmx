@@ -1,6 +1,6 @@
 import logging as log
 import pandas as pd
-from parse_files import parse_cgen, parse_ff
+from src.parse_files import parse_cgen, parse_ff
 import os
 import click
 import sys

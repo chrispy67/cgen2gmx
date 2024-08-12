@@ -1,5 +1,5 @@
 import logging as log
-from classes import MolecularData, ForceFieldInfo
+from src.classes import MolecularData, ForceFieldInfo
 
 def parse_cgen(file_path):
     molecular_data = MolecularData()
