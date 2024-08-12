@@ -11,9 +11,9 @@
 The raw output from [CGenFF](https://cgenff.com/) is incompatible with [CHARMM forcefields for GROMACS simulations](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5199616/) in many ways, primarily units and force constants being in different columns. Organizing and curating these parameters by hand can be very tedious and error-prone.<br />
 
 This is a commandline tool written in Python that makes the process of parameterizing multiple small molecules in one CHARMM forcefield directory much easier. This is meant to work with raw output files from CgenFF and existing `ffbonded.itp` files from CHARMM forcefield direcotries. 
-When generating and storing forcefield parameters for several small molecules, duplicate entries of parameterized interactions can cause issues with molecular dynamics production runs. This tool reads raw outputs from [CGenFF](https://cgenff.com/) and existing forcefield files, searches for redundant (duplicate) entries  --bonds, angles, dihedrals, and improper dihedrals-- converts from kcal to kJ when needed, and formats unique entries to be directly copy/pasted into a forcefield file
+When generating and storing forcefield parameters for several small molecules, duplicate entries of parameterized interactions can cause issues with molecular dynamics production runs. This tool reads raw outputs from [CGenFF](https://cgenff.com/) and existing forcefield files, searches for redundant (duplicate) entries  --bonds, angles, dihedrals, and improper dihedrals-- converts from kcal to kJ when needed, and formats unique entries to be directly copy/pasted into an existing forcefield file.
 
-# Flags 
+# Flags and Inputs 
  #### `--cgen`: **Path to raw output from CGenFF output file to be read and parsed** 
  #### `--itp`: **Path to existing `ffbonded.itp` to be read and parsed.** 
 NOTE: There are unique functions for reading both forcefield files and CGenFF outputs. There is some error handling built in to account for missing improper dihedral parameters (common) and small formatting changes, but A POORLY ORGANIZED `ffbonded.itp` FILE WILL CAUSE ISSUES! The output format of this script will fit in well with standard CHARMM forcefields. 
@@ -28,16 +28,17 @@ Output file format closely matches standard CHARMM forcefields. If there is alre
 ------------------------------------------------------------------------------------------------------------------------------
 1. **Generate CGenFF output**
  
-   Input a properly formatted and protonated .mol2 file to [CGenFF](https://cgenff.com/) (recently moved to SilcsBio) and retrieve the .str file with parameters. Check this file carefully for poor estimations and high penalty approximations! This script is flexible enough to recognize most of the commented line, but the output of the .str file can vary. If there are any issues with parse_cgen(), make sure all lines that aren't parameters are commented out. 
+   Input a properly formatted and protonated .mol2 file to [CGenFF](https://cgenff.com/) (recently moved to SilcsBio) and retrieve the .str file with parameters. Check this file carefully for poor estimations and high penalty approximations! This script is flexible enough to recognize most commented-out and unnecessary lines, but the output of the .str file can vary. If there are any issues with parse_cgen(), make sure all lines that aren't parameters are commented out.
 
-2. **Familiarize yourself with `ffbonded.itp` file and prepare to add new parameters**
+   **Be sure to include ALL parameters, not just the parameters that aren't already in CHARMM!** SilcsBio has no knowledge of what parameters exist in your CHARMM build, especially if an older version is being used. 
 
-    Understand how `ffbonded.itp` is formatted and which entries go where. These are large files with standard formatting rules and any unexpected lines or inconsistencies may cause issues with parse_ff(). Sample files are provided to show original, up to date .itp files, as well as a slightly modified .itp to demonstrate the formatting rules.
+3. **Familiarize yourself with `ffbonded.itp` file and prepare to add new parameters**
+
+    Understand how `ffbonded.itp` is formatted and which entries go where. These are large files with standard formatting rules and any unexpected lines or inconsistencies may cause issues with parse_ff(). Sample files are provided to show original up to date .itp files, as well as a slightly modified .itp to demonstrate the formatting rules.
 
 4. **Use the cgen2gmx.py script**
    
-   (might change the install procedure?)
-   Generate an output file that contains unique entries —new entries to be added to the existing .itp file that will not clash with existing entries —with specified units and column order for CHARMM forcefields for GROMACS.
+   Generate an output file that contains unique entries-new entries to be added to the existing .itp file that will not clash with existing entries-with specified units and column order for CHARMM forcefields for GROMACS.
    From the directory containing `cgen2gmx.py`:
    > python cgen2gmx.py --itp demo/ffbonded-36m_jul2022.itp --cgen demo/CGEN_OUTPUT/CRO_ex.str --output cgen2gmx_DEMO.dat --kJ
 
@@ -53,6 +54,14 @@ Output file format closely matches standard CHARMM forcefields. If there is alre
 
 
 # Contributing
+ If this was useful to you in any way, whether parameterizing small molecules for a research project or just to see how someone else accomplished this, please let me know! I used a clunkier, less flexible version of this code to deal with MD parameters for chromophores in fluorescent proteins for my MS thesis. Polishing and publishing this script was a great exercise in building reusable code, as well as an opprotunity to showcase my Python abilities. 
+
+ While `parse_cgen()` and `classes.py` handle the atom types and topolgy information found in the CGenFF output, that information is not used by the script. There are issues translating the atom types used by different MD engines, and the topologies found in CGenFF are GENERALLY compatible. Future releases may target this information for greater functionality.
+
+ If you think this this repository would fit in well with an existing codebase, please let me know and I would be happy to contribute to more estabished software packages for visibility!
+ 
+
+ 
 
 
 
