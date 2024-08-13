@@ -1,7 +1,6 @@
 name: Publish Modules to PyPi and Test Pypi
 on: push
 
-# updated via https://github.com/google-deepmind/dm_env_rpc/blob/master/.github/workflows/publish-to-pypi.yml
 jobs:
   build:
     name: Build distribution
@@ -25,16 +24,15 @@ jobs:
         python -m pip install build --upgrade pip
         pip install setuptools wheel twine
 
+    - name: Build the distribution package
+      run: |
+        python setup.py sdist bdist_wheel
+
     - name: Store the distribution packages
       uses: actions/upload-artifact@v3
       with:
         name: python-package-distributions
-        path: dist/
-    
-    - name: run setup
-      run: |
-        python setup.py build 
-        
+        path: dist/*
 
   github-release:
     name: >-
