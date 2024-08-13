@@ -30,10 +30,11 @@ jobs:
       with:
         name: python-package-distributions
         path: dist/
-      
+    
+    - name: run setup
       run: |
         python setup.py
-        twine upload dist/*
+        
 
   github-release:
     name: >-
