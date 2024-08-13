@@ -1,6 +1,7 @@
 name: Publish Modules to PyPi and Test Pypi
 on: push
 
+# updated via https://github.com/google-deepmind/dm_env_rpc/blob/master/.github/workflows/publish-to-pypi.yml
 jobs:
   build:
     name: Build distribution
@@ -8,20 +9,36 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.x"
+
+    - name: Add repo sub-modules
+      run: |
+      git submodule init
+      git submodule update
+
     - name: Install dependencies
       run: |
-        python -m pip install build --user
-    - name: Build a binary wheel and a source tarball
-      run: python -m build
+        python -m pip install build --upgrade pip
+        pip install setuptools wheel twine
+
     - name: Store the distribution packages
       uses: actions/upload-artifact@v3
       with:
         name: python-package-distributions
         path: dist/
+
+    - name: Build and Publish
+      env:
+      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME  }}
+      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      
+      run: |
+        python setup.py
+        twine upload dist/*
 
   github-release:
     name: >-
@@ -74,7 +91,7 @@ jobs:
 
     environment:
       name: testpypi
-      url: https://test.pypi.org/p/<package-name>
+      url: https://test.pypi.org/p/cgen2gmx
 
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
