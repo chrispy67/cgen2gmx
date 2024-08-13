@@ -23,12 +23,12 @@ setup(
     keywords="molecular dynamics, charmm, forcefield, computational chemistry",
     packages=find_namespace_packages(),
 
-    #python_requires=">=3.7, <4",
-    #extras_require={ 
-    #    "test": ["coverage", 'pytest'],
-    #},
+    python_requires=">=3.7, <4",
+    extras_require={ 
+        "test": ["coverage", 'pytest'],
+    },
 
-    #package_data={},
-    #data_files=None, 
-    #entry_points={},
+    package_data={},
+    data_files=None, 
+    entry_points={},
 )
