@@ -17,8 +17,8 @@ jobs:
 
     - name: Add repo sub-modules
       run: |
-      git submodule init
-      git submodule update
+        git submodule init
+        git submodule update
 
     - name: Install dependencies
       run: |
