@@ -30,11 +30,6 @@ jobs:
       with:
         name: python-package-distributions
         path: dist/
-
-    - name: Build and Publish
-      env:
-      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME  }}
-      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       
       run: |
         python setup.py
