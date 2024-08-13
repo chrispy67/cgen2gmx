@@ -25,11 +25,11 @@ jobs:
         python -m pip install build --upgrade pip
         pip install setuptools wheel twine
 
-    # - name: Store the distribution packages
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #     name: python-package-distributions
-    #     path: dist/
+    - name: Store the distribution packages
+      uses: actions/upload-artifact@v3
+      with:
+        name: python-package-distributions
+        path: dist/
     
     - name: run setup
       run: |
