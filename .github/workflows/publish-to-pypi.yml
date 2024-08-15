@@ -1,6 +1,6 @@
 # test if this works on a tagged release. I don't want to push a new version to Pypi on every commit 
-# name: Publish Modules to PyPi and Test PyPi
 
+name: Publish Modules to PyPi and Test PyPi
 on:
   release:
 
