@@ -9,7 +9,7 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="cgen2gmx",  
-    version="1.o",  # Required
+    version="1.0",  # Required
     long_description=long_description, 
     long_description_content_type="text/markdown", 
     url="https://github.com/chrispy67/cgen2gmx",
