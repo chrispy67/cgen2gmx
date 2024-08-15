@@ -13,7 +13,7 @@ setup(
     long_description=long_description, 
     long_description_content_type="text/markdown", 
     url="https://github.com/chrispy67/cgen2gmx",
-    author="Christian Phillips ", 
+    author="Christian Phillips", 
     author_email="christian_phillips1@msn.com",
     classifiers=[
         "Development Status :: 1 - Planning",
@@ -23,7 +23,7 @@ setup(
     keywords="molecular dynamics, charmm, forcefield, computational chemistry",
     packages=find_namespace_packages(),
 
-    python_requires=">=3.7, <4",
+    python_requires="<4",
     extras_require={ 
         "test": ["coverage", 'pytest'],
     },
