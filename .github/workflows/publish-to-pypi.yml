@@ -5,10 +5,6 @@ on:
   release:
     types: [published]
 
-name: Publish Modules to PyPi and Test PyPi
-
-on: push
-
 # THIS IS FOR TEST-PYPI
 jobs:
   build:
