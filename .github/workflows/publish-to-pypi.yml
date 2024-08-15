@@ -3,7 +3,6 @@
 
 on:
   release:
-    types: [published]
 
 # THIS IS FOR TEST-PYPI
 jobs:
