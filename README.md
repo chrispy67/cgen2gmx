@@ -13,6 +13,13 @@ The raw output from [CGenFF](https://cgenff.com/) is incompatible with [CHARMM f
 This is a commandline tool written in Python that makes the process of parameterizing multiple small molecules in one CHARMM forcefield directory much easier. This is meant to work with raw output files from CgenFF and existing `ffbonded.itp` files from CHARMM forcefield direcotries. 
 When generating and storing forcefield parameters for several small molecules, duplicate entries of parameterized interactions can cause issues with molecular dynamics production runs. This tool reads raw outputs from [CGenFF](https://cgenff.com/) and existing forcefield files, searches for redundant (duplicate) entries  --bonds, angles, dihedrals, and improper dihedrals-- converts from kcal to kJ when needed, and formats unique entries to be directly copy/pasted into an existing forcefield file.
 
+# Installation
+
+There is a pip package installable via `pip install cgen2gmx` that will enable the use of the package anywhere by using `cgen2gmx` anywhere in the CLI. 
+
+If you wish to make changes to the source code for your specific use case, cloning or branching the repo is reccomended. 
+
+
 # Flags and Inputs 
  #### `--cgen`: **Path to raw output from CGenFF output file to be read and parsed** 
  #### `--itp`: **Path to existing `ffbonded.itp` to be read and parsed.** 
@@ -39,10 +46,15 @@ Output file format closely matches standard CHARMM forcefields. If there is alre
 4. **Use the cgen2gmx.py script**
    
    Generate an output file that contains unique entries-new entries to be added to the existing .itp file that will not clash with existing entries-with specified units and column order for CHARMM forcefields for GROMACS.
-   From the directory containing `cgen2gmx.py`:
+   From the directory containing `cgen2gmx.py` if repo is cloned:
    > python cgen2gmx.py --itp demo/ffbonded-36m_jul2022.itp --cgen demo/CGEN_OUTPUT/CRO_ex.str --output cgen2gmx_DEMO.dat --kJ
 
+   
+   **if installed via pip, `cgen2gmx` allows you to interact with the module anywhere. Enter `cgen2gmx --help` for more information.**
+
    This command takes in a current, unmodified `ffbonded.itp` file, searches for duplicates found in a raw CGenFF output file, and outputs unique entries in the proper order and units for GROMACS simulations (kJ and nm).
+
+
    > python cgen2gmx.py --itp demo/ffbonded-36m_jul2022.itp --cgen demo/CGEN_OUTPUT/CRO_ex.str --output cgen2gmx_DEMO.dat
 
    This command does the exact same thing as the previous one, but leaves the units as-is from CGenFF (kcal and Å). This should add flexibility in case this script needs to be adapted for other MD engines. However, the header column order is hardcoded and fixed to follow the format present in CHARMM forcefields.
@@ -52,16 +64,9 @@ Output file format closely matches standard CHARMM forcefields. If there is alre
    `cgen2gmx_DEMO.dat` will contain the unique entries, complete with consistent formatting to blend in with existing entires and headers with units. Headers will be printed regardless if there are any unique entries. Use your text editor of choice to add the unique entries under the proper bracketed heading, [ bondtypes ], [ angletypes ], and so forth.  
 
 
-
 # Contributing
  If this was useful to you in any way, whether parameterizing small molecules for a research project or just to see how someone else accomplished this, please let me know! I used a clunkier, less flexible version of this code to deal with MD parameters for chromophores in fluorescent proteins for my MS thesis. Polishing and publishing this script was a great exercise in building reusable code, as well as an opprotunity to showcase my Python abilities. 
 
  While `parse_cgen()` and `classes.py` handle the atom types and topolgy information found in the CGenFF output, that information is not used by the script. There are issues translating the atom types used by different MD engines, and the topologies found in CGenFF are GENERALLY compatible. Future releases may target this information for greater functionality.
 
  If you think this this repository would fit in well with an existing codebase, please let me know and I would be happy to contribute to more estabished software packages for visibility!
- 
-
- 
-
-
-

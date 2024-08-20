@@ -1,11 +1,11 @@
 # test if this works on a tagged release. I don't want to push a new version to Pypi on every commit 
 
 name: Publish Modules to PyPi and Test PyPi
-on: push 
+# on: push 
 
-# on:
-  #release
-    #types: [published]
+on:
+  release
+    types: [published]
 
 # THIS IS FOR TEST-PYPI
 jobs:
@@ -26,7 +26,7 @@ jobs:
         git submodule init
         git submodule update
 
-    - name: Clean previous builds
+    - name: Clean previous builds # This was crucial for avoiding conflictss
       run: |
         rm -rf dist/ build/ *.egg-info
 

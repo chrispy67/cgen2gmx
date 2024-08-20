@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="cgen2gmx",  
-    version="1.0.1",  
+    version="1.0.1", # Needs to be updated EACH TIME A NEW RELEASE IS CREATED
     description="A small commandline tool for managing forcefield parameters used in molecular dynamics simulations", 
     long_description=long_description,  # Detailed description from README
     long_description_content_type="text/markdown",  # Type of content in long description
@@ -26,13 +26,14 @@ setup(
         # List your package dependencies here, e.g.,
         # 'pandas', 'os', 'click'
     ],
+    py_modules=['cgen2gmx'],
     entry_points={
         'console_scripts': [
             'cgen2gmx=cgen2gmx:main', 
         ],
     },
-    include_package_data=True,  # Includes additional files specified in MANIFEST.in
-    project_urls={  # Optional additional URLs
+    include_package_data=True, 
+    project_urls={ 
         "Bug Reports": "https://github.com/chrispy67/cgen2gmx/issues",
         "Source": "https://github.com/chrispy67/cgen2gmx",
     },
