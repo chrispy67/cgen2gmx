@@ -2,9 +2,7 @@
 
 name: Publish Modules to PyPi and Test PyPi
 # on: push 
-
-on:
-  release
+on: release
     types: [published]
 
 # THIS IS FOR TEST-PYPI
