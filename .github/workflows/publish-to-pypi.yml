@@ -1,10 +1,10 @@
 # test if this works on a tagged release. I don't want to push a new version to Pypi on every commit 
 
 name: Publish Modules to PyPi and Test PyPi
-# on: push 
-on: 
+
+on:
   push:
-    tags: [published]
+    tags:
       - 'v*'  # Triggers the workflow on any tag that starts with 'v'
 # THIS IS FOR TEST-PYPI
 jobs:
