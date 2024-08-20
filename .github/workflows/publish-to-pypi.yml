@@ -2,10 +2,12 @@
 
 name: Publish Modules to PyPi and Test PyPi
 
-on:
-  push:
-    tags:
-      - 'v*'  # Triggers the workflow on any tag that starts with 'v'
+on: push 
+
+# on:
+#   push:
+#     tags:
+#       - 'v*'  # Triggers the workflow on any tag that starts with 'v'
 # THIS IS FOR TEST-PYPI
 jobs:
   build:
