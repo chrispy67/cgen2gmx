@@ -26,6 +26,10 @@ jobs:
         git submodule init
         git submodule update
 
+    - name: Clean previous builds
+      run: |
+        rm -rf dist/ build/ *.egg-info
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
