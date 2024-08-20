@@ -1,17 +1,17 @@
 # cgen2charmm
 
 ##### Table of Contents  
-1. [Introduction](#headers)
-2. [Installation](#headers)
-3. [Flags and Inputs](#headers)
-4. [Examples](#headers)
-5. [Contributing](#headers)
+1. [Introduction](https://github.com/chrispy67/cgen2gmx#introduction)
+2. [Installation](https://github.com/chrispy67/cgen2gmx#installation)
+3. [Flags and Inputs](https://github.com/chrispy67/cgen2gmx#flags-and-inputs)
+4. [Examples](https://github.com/chrispy67/cgen2gmx#examples)
+5. [Contributing](https://github.com/chrispy67/cgen2gmx#contributing)
 
 # Introduction
 The raw output from [CGenFF](https://cgenff.com/) is incompatible with [CHARMM forcefields for GROMACS simulations](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5199616/) in many ways, primarily units and force constants being in different columns. Organizing and curating these parameters by hand can be very tedious and error-prone.<br />
 
 This is a commandline tool written in Python that makes the process of parameterizing multiple small molecules in one CHARMM forcefield directory much easier. This is meant to work with raw output files from CgenFF and existing `ffbonded.itp` files from CHARMM forcefield direcotries. 
-When generating and storing forcefield parameters for several small molecules, duplicate entries of parameterized interactions can cause issues with molecular dynamics production runs. This tool reads raw outputs from [CGenFF](https://cgenff.com/) and existing forcefield files, searches for redundant (duplicate) entries  --bonds, angles, dihedrals, and improper dihedrals-- converts from kcal to kJ when needed, and formats unique entries to be directly copy/pasted into an existing forcefield file.
+When generating and storing forcefield parameters for several small molecules, duplicate entries of parameterized interactions can cause issues with molecular dynamics production runs. This tool reads raw outputs from [CGenFF](https://cgenff.com/) and existing forcefield files, searches for redundant (duplicate) entries--bonds, angles, dihedrals, and improper dihedrals--converts from kcal to kJ when needed, and formats unique entries to be directly copy/pasted into an existing forcefield file.
 
 # Installation
 
