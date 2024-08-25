@@ -47,7 +47,7 @@ jobs:
         path: dist/*
 
   publish-to-testpypi:
-    name: Publish Python 🐍 distribution 📦 to TestPyPI
+    name: Publish Python distribution to TestPyPI
     needs: build
     runs-on: ubuntu-latest
 
@@ -68,28 +68,28 @@ jobs:
         password: ${{ secrets.TEST_PYPI_TOKEN }}
         repository-url: https://test.pypi.org/legacy/
 
-# # FOR PYPI PROPER. BEST TO KEEP BOTH OF THESE PACKAGES UP TO DATE?
-#   publish-to-pypi:
-#     name: Publish Python 🐍 distribution 📦 to PyPI
-#     needs: build
-#     runs-on: ubuntu-latest
+# FOR PYPI PROPER. BEST TO KEEP BOTH OF THESE PACKAGES UP TO DATE?
+  publish-to-pypi:
+    name: Publish Python distribution to PyPI
+    needs: build
+    runs-on: ubuntu-latest
 
-#     permissions:
-#       id-token: write  # IMPORTANT: mandatory for trusted publishing
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
 
-#     steps:
-#     - name: Download all the dists
-#       uses: actions/download-artifact@v3
-#       with:
-#         name: python-package-distributions
-#         path: dist/
+    steps:
+    - name: Download all the dists
+      uses: actions/download-artifact@v3
+      with:
+        name: python-package-distributions
+        path: dist/
         
-#     - name: Publish distribution 📦 to PyPI
-#       uses: pypa/gh-action-pypi-publish@release/v1
-#       with:
-#         user: __token__
-#         password: ${{ secrets.PYPI_TOKEN }}
-#         repository-url: https://upload.pypi.org/legacy/
+    - name: Publish distribution 📦 to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN }}
+        repository-url: https://upload.pypi.org/legacy/
 
   # I don't think I need this section if I am working with tags and not releases?
 
@@ -101,7 +101,7 @@ jobs:
       and upload them to GitHub Release
     needs: 
       - publish-to-testpypi
-      # - publish-to-pypi
+      - publish-to-pypi
     runs-on: ubuntu-latest
 
     permissions:
