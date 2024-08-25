@@ -3,8 +3,7 @@ import os
 import click
 import sys
 import argparse
-import config
-
+from . import config # this relative import is crucial for pip install
 # to-do:
 # - update_charmm() can't hang with the empty set()
 # - error handling for the new format_string() function.
