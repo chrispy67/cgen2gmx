@@ -1,4 +1,3 @@
-import logging as log
 from src.classes import MolecularData, ForceFieldInfo
 
 def parse_cgen(file_path):

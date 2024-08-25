@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="cgen2gmx",  
-    version="1.0.4", # Needs to be updated EACH TIME A NEW RELEASE IS CREATED
+    version="1.0.5", # Needs to be updated EACH TIME A NEW RELEASE IS CREATED
     description="A small commandline tool for managing forcefield parameters used in molecular dynamics simulations", 
     long_description=long_description,  # Detailed description from README
     long_description_content_type="text/markdown",  # Type of content in long description

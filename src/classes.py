@@ -2,7 +2,7 @@ import logging as log
 import pandas as pd
 import re
 import os
-import config
+from src import config
 
 
 # import user flags stored in config file

@@ -4,7 +4,7 @@ from src.parse_files import parse_cgen, parse_ff
 import os
 import click
 import sys
-import config
+from src import config
 
 # How to loop through the dictionary and where the keys are addressable.
 def iterate_nested_dict(nested_dict, parent_key=''):
