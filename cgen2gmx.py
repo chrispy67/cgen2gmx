@@ -3,7 +3,8 @@ import os
 import click
 import sys
 import argparse
-from src import config
+import subprocess
+from src import config, parse_headers
 # to-do:l
 # - update_charmm() can't hang with the empty set()
 # - error handling for the new format_string() function.
@@ -34,7 +35,7 @@ def main():
 
     #input cgen parameter file
     parser.add_argument('--cgen', type=str,
-        help='?Raw output file from CgenFF by SilcsBio. PLEASE CHECK CONTENTS OF FILE CAREFULLY')
+        help='Raw output file from CgenFF by SilcsBio. PLEASE CHECK CONTENTS OF FILE CAREFULLY')
 
     parser.add_argument('--output', type=str, 
         help="""File for unique forcefield parameters to be printed to. If file is present, 
@@ -45,13 +46,16 @@ def main():
     parser.add_argument(*unit_inputs, dest='convert_to_kj', action='store_true',
         help='Specifying units (CgenFF uses kcal/mol, but GROMACS needs kJ/mol.')
 
+    parser.add_argument('--header', dest='header_columns', action='store_true',
+    help="""Format of custom headers for different MD engines if needed. WIP""")
 
     args = parser.parse_args()
     config.input_file_CHARMM = args.itp
     config.input_file_CGEN = args.cgen 
     config.output_file = args.output 
     config.convert_to_kj = args.convert_to_kj
-    print('from cgen2gmx', config.convert_to_kj, config.input_file_CGEN)
+    config.header_columns = args.header_columns
+    print('from cgen2gmx', config.header_columns)
 
 
     if config.convert_to_kj:
@@ -59,6 +63,14 @@ def main():
     else:
         print('No unit conversion specified.')
 
+    if config.header_columns:
+        
+        headers = subprocess.run(["python", "src/parse_headers.py"], 
+        capture_output=True, text=True)
+        print(headers.stdout) # this would be a good way to get the headers I need in this script
+        # I might need to make a new class for headers()?
+        # need to find a way to metch them up with the values I have.
+        # default activity should be to leave the headers in the CHARMM x GROMACS format. 
 
     #importing functions and files AFTER parsing the arguments is VERY important here
     from src.parse_files import parse_cgen, parse_ff
