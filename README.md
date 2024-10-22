@@ -1,4 +1,4 @@
-# cgen2charmm
+# cgen2gmx
 
 ##### Table of Contents  
 1. [Introduction](https://github.com/chrispy67/cgen2gmx#introduction)
